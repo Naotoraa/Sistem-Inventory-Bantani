@@ -1,0 +1,98 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: 60px;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.content-container {
+    padding-left: 85px;
+    width: 100%;
+}
+
+.table-title {
+    font-size: 20px;
+    margin-top: 15px;
+    font-weight: bold;
+    margin-left: 25px;
+    color: black;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sub-title {
+    font-size: 12px;
+    margin-left: 25px;
+    color: black;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.info-stok-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 20px;
+    padding: 30px;
+    background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+    min-height: 50vh;
+}
+
+.stok-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    cursor: pointer;
+    border: none;
+    position: relative;
+}
+
+.stok-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stok-card img {
+    width: 98%;
+    height: 150px;
+    border-radius: 8%;
+    margin: 0 auto;
+    background-color: #ddd;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* Info barang */
+.stok-info {
+    padding: 16px;
+    background-color: #fff;
+    flex-grow: 1;
+}
+
+.stok-info h3 {
+    font-size: 16px;
+    margin: 0 0 6px;
+    color: #222;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.stok-info p {
+    font-size: 13px;
+    color: #555;
+    margin: 0;
+}
+
+.stok-quantity {
+    margin-top: 10px;
+    font-weight: 600;
+    color: #0d6efd;
+    font-size: 14px;
+}

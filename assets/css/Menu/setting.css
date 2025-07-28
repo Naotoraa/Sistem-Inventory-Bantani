@@ -1,0 +1,106 @@
+.setting-container {
+  margin-left: 90px;
+  padding: 40px 20px;
+  width: 93%;
+  color: #fff;
+}
+
+.card-setting {
+  background-color: #689f38; /* hijau baru */
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  color: #fff;
+}
+
+.setting-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+}
+
+.profile-card {
+  background-color: #3a3a3a;
+  border-radius: 12px;
+  padding: 20px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.profile-card:hover {
+  transform: scale(1.02);
+}
+
+.profile-card img {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid #689f38; /* hijau baru */
+}
+
+.device-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.rename-link {
+  font-size: 0.85rem;
+  color: #aed581; /* hijau muda turunan dari #689F38 */
+  text-decoration: none;
+}
+
+.rename-link:hover {
+  text-decoration: underline;
+  color: #c5e1a5;
+}
+
+.cloud-storage-bar {
+  height: 6px;
+  border-radius: 4px;
+  background: #c5e1a5; /* hijau background progress */
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.cloud-storage-fill {
+  height: 100%;
+  width: 34%;
+  background-color: #689f38; /* hijau indikator */
+}
+
+.btn-light {
+  background-color: #f1f8e9;
+  color: #33691e;
+  border: none;
+}
+
+.btn-light:hover {
+  background-color: #dcedc8;
+  color: #2e7d32;
+}
+
+.btn-warning {
+  background-color: #c0ca33;
+  border: none;
+  color: #000;
+  transition: all 0.3s ease;
+}
+
+.btn-warning:hover {
+  background-color: #827717; /* jauh lebih gelap */
+  color: #fff; /* biar makin kontras */
+  box-shadow: 0 0 10px #827717;
+  transform: scale(1.03);
+}
+
+.form-check-input:checked {
+  background-color: #689f38;
+  border-color: #689f38;
+}

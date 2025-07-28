@@ -1,0 +1,105 @@
+#judul_statistik {
+  margin-left: 43%;
+}
+
+.infographic-square {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  margin: 50px auto;
+  display: flex;
+  flex-wrap: wrap;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  border-radius: 20px; /* agar kotaknya tetap agak melengkung di sudut */
+  overflow: hidden;
+}
+
+.quadrant {
+  width: 50%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.quadrant span {
+  display: block;
+  font-size: 18px;
+  margin-top: 5px;
+}
+
+.top-left {
+  background-color: #4caf50;
+}
+
+.top-right {
+  background-color: #ffa500;
+}
+
+.bottom-right {
+  background-color: #2196f3;
+}
+
+.bottom-left {
+  background-color: #f44336;
+}
+
+.center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  background-color: white;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 1;
+}
+
+.center-circle h3 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+}
+
+.center-circle p {
+  margin: 0;
+  margin-top: 5px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #666;
+}
+
+.quadrant {
+  flex-direction: column;
+}
+
+.quadrant > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.quadrant span {
+  font-size: 18px;
+  margin-top: 5px;
+}

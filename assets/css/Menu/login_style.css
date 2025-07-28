@@ -1,0 +1,268 @@
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none;
+}
+
+input[type="password"]::-moz-credentials-auto-fill-button {
+    display: none;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    font-size: "Poppin", sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    letter-spacing: 1px;
+    background-image: url("../../img/bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    backdrop-filter: blur(5px);
+}
+
+.Logo {
+    display: block;
+    margin: 0 auto;
+    max-width: 65px;
+    height: auto;
+}
+
+.Login_form_container {
+    position: relative;
+    width: 400px;
+    height: 470px;
+    max-width: 400px;
+    max-height: 470px;
+    background: #F0FFFF;
+    border-radius: 50px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 25px;
+}
+
+.Login_form_container::before {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    content: '';
+    background-image: conic-gradient(transparent, transparent, transparent, #ee00ff);
+    animation: rotate_border 10s linear infinite;
+    animation-direction: normal;
+}
+
+.Login_form_container::after {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    content: '';
+    background-image: conic-gradient(transparent, transparent, transparent, #00ccff);
+    animation-delay: -2s;
+    animation: rotate_border 10s linear infinite;
+    animation-direction: reverse;
+}
+
+@keyframes rotate_border {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.Login_form {
+    position: absolute;
+    content: '';
+    opacity: 5;
+    height: 600px;
+    background-color: #F0FFFF;
+    border-radius: 50px 5px;
+    inset: 5px;
+    padding: 50px 40px;
+    z-index: 12;
+    color: black;
+}
+
+
+h2 {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    color: black;
+}
+
+h4 {
+    font-size: 14px;
+    text-align: center;
+}
+
+.Input_grup {
+    margin-top: 40px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+
+.Input_text {
+    width: 300px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    outline: none;
+    border-bottom: 1px solid #00ccff;
+    font-size: 16px;
+    padding-left: 10px;
+    padding-right: 30px;
+    color: black;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+}
+
+::placeholder {
+    font-size: 14px;
+    color: silver;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+.Button_grup {
+    margin-top: 35px;
+    text-align: center;
+}
+
+.Button_grup button {
+    padding: 10px 50px;
+    background: linear-gradient(to right, #00C9FF, #92FE9D);
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    width: 250px;
+}
+
+.Button_grup button:hover {
+    transform: scale(1.1);
+    opacity: 0.95;
+    box-shadow: 0 4px 15px rgba(0, 201, 255, 0.6);
+    background: linear-gradient(to right, #92FE9D, #00C9FF);
+}
+
+.Footer {
+    position: relative;
+    text-align: center;
+    padding: 20px 0;
+    background-color: #F0FFFF;
+}
+
+.Footer a {
+    color: blue;
+    text-decoration: underline;
+}
+
+.Footer p {
+    cursor: pointer;
+    font-size: 11px;
+    margin: 0;
+}
+
+.glowIcon {
+    text-shadow: 0 0 10px #00ccff;
+}
+
+@media screen and (max-width: 768px) {
+    .Login_form_container {
+        margin-top: 50px;
+    }
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.floating-alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeInOut 4s ease forwards;
+    font-size: 15px;
+}
+
+.error-alert {
+    background-color: #e74c3c;
+}
+
+.success-alert {
+    background-color: #2ecc71;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+}
