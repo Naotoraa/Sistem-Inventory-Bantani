@@ -1,7 +1,3 @@
-<?php
-require_once 'settings.php';
-?>
-
 <header class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center" href="https://bantani.net.id/">
@@ -24,9 +20,9 @@ require_once 'settings.php';
                         </div>
                     </div>
                     <div class="profile-actions">
-                        <a href="<?php echo $link; ?>pages/Menu/setting.php"><i class="fas fa-user"></i>
+                        <a href="<?= BASE_URL; ?>/pages/Menu/setting.php"><i class="fas fa-user"></i>
                             Profile</a>
-                        <a href="<?php echo $link; ?>pages/Menu/logout.php"><i class="fas fa-sign-out-alt"></i>
+                        <a href="<?= BASE_URL; ?>/pages/Menu/logout.php"><i class="fas fa-sign-out-alt"></i>
                             Logout</a>
                     </div>
 
