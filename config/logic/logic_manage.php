@@ -13,10 +13,15 @@ $bulan = $_GET['bulan'] ?? date('Y-m');
 $conditions = [];
 
 $bulan_sebelumnya = '';
+$stok_awal_kosong = false;
 if (!empty($bulan)) {
-    $date = DateTime::createFromFormat('Y-m', $bulan);
-    $date->modify('-1 month');
-    $bulan_sebelumnya = $date->format('Y-m');
+    if ($bulan == '2025-07') {
+        $stok_awal_kosong = true;
+    } else {
+        $date = DateTime::createFromFormat('Y-m', $bulan);
+        $date->modify('-1 month');
+        $bulan_sebelumnya = $date->format('Y-m');
+    }
 }
 
 if (!empty($cari)) {

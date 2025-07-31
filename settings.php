@@ -1,6 +1,6 @@
 <?php
 
-// $link = "http://10.100.1.31/Gudang";
+// $link = "http://localhost/Gudang";
 $link = "https://inventory.bantani.net.id";
 
 define('BASE_URL', $link);
