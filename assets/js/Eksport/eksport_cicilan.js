@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
         icon: "warning",
         title: "Periode belum dipilih",
         text: "Silakan pilih bulan terlebih dahulu sebelum export.",
+        confirmButtonText: "OK",
       });
       bulanInput.focus();
       return;
@@ -15,10 +16,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const dataRows = Array.from(document.querySelectorAll("#tabel-data tr"));
     const hasValidData = dataRows.some((row) => {
-      const cells = row.querySelectorAll("td");
+      const cells = Array.from(row.querySelectorAll("td"));
       return (
         cells.length > 1 &&
-        [...cells].some((td, i) => i > 0 && td.innerText.trim() !== "")
+        cells.some((td, i) => i > 0 && td.innerText.trim() !== "")
       );
     });
 
@@ -27,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
         icon: "info",
         title: "Tidak ada data",
         text: "Data untuk periode ini kosong, tidak bisa diexport.",
+        confirmButtonText: "OK",
       });
       return;
     }
@@ -34,20 +36,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF("l", "pt", "a4");
 
+    // LOGO
     const logo = new Image();
     logo.src = "../../assets/img/Bantani 1.png";
     await new Promise((resolve) => (logo.onload = resolve));
     doc.addImage(logo, "PNG", 40, 25, 60, 60);
 
+    // HEADER PDF
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text(
       "LAPORAN CICILAN ASET / KENDARAAN",
       doc.internal.pageSize.getWidth() / 2,
       40,
-      {
-        align: "center",
-      }
+      { align: "center" }
     );
 
     doc.setFont("helvetica", "normal");
@@ -56,11 +58,10 @@ document.addEventListener("DOMContentLoaded", function () {
       "Sistem Inventory PT Bantani Media Utama",
       doc.internal.pageSize.getWidth() / 2,
       60,
-      {
-        align: "center",
-      }
+      { align: "center" }
     );
 
+    // PERIODE
     const [tahun, bulan] = bulanValue.split("-");
     const namaBulan = [
       "Januari",
@@ -79,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const bulanText = `${namaBulan[parseInt(bulan) - 1]} ${tahun}`;
     doc.text(`Periode: ${bulanText}`, 40, 100);
 
-    // Ambil isi tabel
+    // HEADER TABEL
     const headers = [
       [
         "No",
@@ -93,9 +94,15 @@ document.addEventListener("DOMContentLoaded", function () {
       ],
     ];
     const rows = [];
+    let totalSemua = 0;
+
     dataRows.forEach((tr) => {
       const cells = tr.querySelectorAll("td");
       if (cells.length >= 8) {
+        const total =
+          parseInt(cells[6].innerText.trim().replace(/[^0-9]/g, "")) || 0;
+        totalSemua += total;
+
         rows.push([
           cells[0].innerText.trim(),
           cells[1].innerText.trim(),
@@ -103,52 +110,75 @@ document.addEventListener("DOMContentLoaded", function () {
           cells[3].innerText.trim(),
           cells[4].innerText.trim(),
           cells[5].innerText.trim(),
-          cells[6].innerText.trim(),
+          "Rp. " + total.toLocaleString("id-ID"),
           cells[7].innerText.trim(),
         ]);
       }
     });
 
+    const totalSemuaFmt = "Rp. " + totalSemua.toLocaleString("id-ID");
+
+    // AUTO TABLE
     doc.autoTable({
       head: headers,
       body: rows,
       startY: 120,
-      theme: "striped",
+      theme: "plain",
       headStyles: {
-        fillColor: [104, 159, 56],
+        fillColor: [0, 102, 102],
         textColor: 255,
         fontStyle: "bold",
         halign: "center",
       },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-      },
-      styles: {
-        fontSize: 10,
-        cellPadding: 6,
-        halign: "center",
+      bodyStyles: { halign: "center", fontSize: 10, cellPadding: 6 },
+      alternateRowStyles: { fillColor: [230, 245, 233] },
+      foot: [
+        [
+          {
+            content: "TOTAL",
+            colSpan: 6,
+            styles: { halign: "center", fontStyle: "bold" },
+          },
+          {
+            content: totalSemuaFmt,
+            styles: { halign: "center", fontStyle: "bold" },
+          },
+          { content: "", styles: {} },
+        ],
+      ],
+      footStyles: {
+        fillColor: [0, 102, 102],
+        textColor: 255,
+        fontStyle: "bold",
       },
       margin: { bottom: 120 },
     });
 
-    // Footer
+    // FOOTER & TTD
     const pageHeight = doc.internal.pageSize.getHeight();
     const pageWidth = doc.internal.pageSize.getWidth();
     doc.setFontSize(10);
     doc.text(
-      `Exported: ${new Date().toLocaleDateString("id-ID")}`,
+      "Exported: " + new Date().toLocaleDateString("id-ID"),
       40,
       pageHeight - 40
     );
 
-    doc.text("Disetujui oleh,", pageWidth - 170, pageHeight - 100);
-    doc.text("________________________", pageWidth - 210, pageHeight - 55);
+    const rightMargin = 80;
+    const baseY = pageHeight - 100;
+    doc.text("Disetujui oleh,", pageWidth - rightMargin - 120, baseY);
+    doc.text(
+      "________________________",
+      pageWidth - rightMargin - 160,
+      baseY + 45
+    );
     doc.setFont("helvetica", "bold");
-    doc.text("Dede Irfan", pageWidth - 170, pageHeight - 40);
+    doc.text("Dede Irfan", pageWidth - rightMargin - 115, baseY + 60);
     doc.setFont("helvetica", "normal");
-    doc.text("Manager Keuangan", pageWidth - 185, pageHeight - 27);
+    doc.text("Manager Keuangan", pageWidth - rightMargin - 130, baseY + 73);
 
-    const fileName = `Laporan_Cicilan_${bulanText.replace(/\s/g, "_")}.pdf`;
+    // SIMPAN FILE
+    const fileName = `Laporan_Cicilan_${bulanText.replace(/\s+/g, "_")}.pdf`;
     doc.save(fileName);
   });
 });

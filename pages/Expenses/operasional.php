@@ -172,6 +172,8 @@ include '../../config/logic/logic_operasional.php';
                             <?php
                             $satuanList = [
                                 "Unit",
+                                "Token",
+                                "Sewa",
                                 "Pcs",
                                 "Set",
                                 "Roll",

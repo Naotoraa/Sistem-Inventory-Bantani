@@ -54,9 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
       "LAPORAN BIAYA OPERASIONAL",
       doc.internal.pageSize.getWidth() / 2,
       40,
-      {
-        align: "center",
-      }
+      { align: "center" }
     );
 
     doc.setFont("helvetica", "normal");
@@ -65,9 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
       "Sistem Inventory PT Bantani Media Utama",
       doc.internal.pageSize.getWidth() / 2,
       60,
-      {
-        align: "center",
-      }
+      { align: "center" }
     );
 
     // PERIODE
@@ -106,9 +102,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // AMBIL DATA DARI TABEL HTML
     const rows = [];
+    let totalJumlah = 0;
     dataRows.forEach((tr) => {
       const cells = tr.querySelectorAll("td");
       if (cells.length >= 9) {
+        const jumlahRaw = cells[7].innerText.trim().replace(/[^0-9]/g, "");
+        const jumlahValue = parseInt(jumlahRaw, 10) || 0;
+        totalJumlah += jumlahValue;
+
         rows.push([
           cells[0].innerText.trim(),
           cells[1].innerText.trim(),
@@ -118,31 +119,66 @@ document.addEventListener("DOMContentLoaded", function () {
           cells[5].innerText.trim(),
           cells[6].innerText.trim(),
           cells[7].innerText.trim(),
-          cells[8].innerText.trim(), // KETERANGAN
+          cells[8].innerText.trim(),
         ]);
       }
     });
 
-    // BUAT TABEL PDF
+    // FORMAT RUPIAH
+    const totalFormatted =
+      "Rp. " +
+      totalJumlah.toLocaleString("id-ID", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      });
+
+    // BUAT TABEL PDF (DESAIN MIRIP GAMBAR)
     doc.autoTable({
       head: headers,
       body: rows,
       startY: 120,
-      theme: "striped",
+      theme: "plain",
       margin: { bottom: 120 },
       headStyles: {
-        fillColor: [104, 159, 56],
+        fillColor: [0, 102, 102],
         textColor: 255,
         fontStyle: "bold",
         halign: "center",
       },
+      bodyStyles: {
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
+        halign: "center",
+      },
       alternateRowStyles: {
-        fillColor: [240, 240, 240],
+        fillColor: [230, 245, 233],
       },
       styles: {
         fontSize: 11,
         cellPadding: 7,
-        halign: "center",
+        lineWidth: 0.1,
+        lineColor: [200, 200, 200],
+      },
+
+      // FOOTER TOTAL
+      foot: [
+        [
+          {
+            content: "TOTAL",
+            colSpan: 7, // sampai kolom Keterangan
+            styles: { halign: "center", fontStyle: "bold" }, // rata TENGAH di kolom Keterangan
+          },
+          {
+            content: totalFormatted,
+            styles: { fontStyle: "bold", halign: "center" }, // angka tetap di kolom Harga
+          },
+        ],
+      ],
+
+      footStyles: {
+        fillColor: [0, 102, 102],
+        textColor: 255,
+        fontStyle: "bold",
       },
     });
 
