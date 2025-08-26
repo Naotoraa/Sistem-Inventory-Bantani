@@ -169,6 +169,9 @@ include '../../config/logic/logic_keluar.php'
                     <button type="button" class="pdf">
                         <i class="fas fa-file-pdf"></i> Export to PDF
                     </button>
+                    <button type="button" class="pdf" id="pemakaian">
+                        <i class="fas fa-chart-bar"></i> Export Pemakaian
+                    </button>
                 </div>
                 <div class="pagination" id="pagination-barang"></div>
             </div>
@@ -297,6 +300,7 @@ include '../../config/logic/logic_keluar.php'
     <script src="../../assets/js/Opsional/tom_select.js"></script>
     <script src="../../assets/js/Generate/generate_Item.js"></script>
     <script src="../../assets/js/Eksport/eksport_keluar.js"></script>
+    <script src="../../assets/js/Eksport/pemakaian.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>

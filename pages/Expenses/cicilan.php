@@ -1,6 +1,7 @@
 <?php
 require_once '../../settings.php';
 require '../../config/logic/logic_cicilan.php';
+require '../../config/clear_cache.php';
 ?>
 
 <!DOCTYPE html>
@@ -82,25 +83,25 @@ require '../../config/logic/logic_cicilan.php';
                     $no = 1;
                     if ($result->num_rows > 0):
                         foreach ($result as $row): ?>
-                    <tr>
-                        <td><?= $no++ ?></td>
-                        <td><?= htmlspecialchars($row['no_cicilan']) ?></td>
-                        <td><?= htmlspecialchars($row['nama_barang']) ?></td>
-                        <td><?= htmlspecialchars($row['tanggal_cicilan']) ?></td>
-                        <td>Rp <?= number_format($row['pokok_cicilan'], 0, ',', '.') ?></td>
-                        <td>Rp <?= number_format($row['bunga_cicilan'], 0, ',', '.') ?></td>
-                        <td>Rp <?= number_format($row['total_cicilan'], 0, ',', '.') ?></td>
-                        <td><?= htmlspecialchars($row['keterangan']) ?></td>
-                        <td style="text-align: center;">
-                            <button type="button" class="delete-btn" data-link="?hapus_data=<?= $row['no_cicilan'] ?>">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button type="button" class="edit-btn"
-                                data-link="?update_row=<?= $row['no_cicilan'] ?>#form_edit_insert">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= htmlspecialchars($row['no_cicilan']) ?></td>
+                                <td><?= htmlspecialchars($row['nama_barang']) ?></td>
+                                <td><?= htmlspecialchars($row['tanggal_cicilan']) ?></td>
+                                <td>Rp <?= number_format($row['pokok_cicilan'], 0, ',', '.') ?></td>
+                                <td>Rp <?= number_format($row['bunga_cicilan'], 0, ',', '.') ?></td>
+                                <td>Rp <?= number_format($row['total_cicilan'], 0, ',', '.') ?></td>
+                                <td><?= htmlspecialchars($row['keterangan']) ?></td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="delete-btn" data-link="?hapus_data=<?= $row['no_cicilan'] ?>">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <button type="button" class="edit-btn"
+                                        data-link="?update_row=<?= $row['no_cicilan'] ?>#form_edit_insert">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
                     <?php endforeach;
                     else:
                         echo "<tr><td colspan='9' style='text-align: center;'>Tidak ada data.</td></tr>";
@@ -219,21 +220,21 @@ require '../../config/logic/logic_cicilan.php';
     </footer>
 
     <script>
-    function formatRupiah(input) {
-        let angka = input.value.replace(/\D/g, '');
-        input.value = angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
+        function formatRupiah(input) {
+            let angka = input.value.replace(/\D/g, '');
+            input.value = angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
 
-    function getNumberFromRupiah(rp) {
-        return parseInt(rp.replace(/\./g, '')) || 0;
-    }
+        function getNumberFromRupiah(rp) {
+            return parseInt(rp.replace(/\./g, '')) || 0;
+        }
 
-    function hitungTotal() {
-        const pokok = getNumberFromRupiah(document.getElementById('pokok').value);
-        const bunga = getNumberFromRupiah(document.getElementById('bunga').value);
-        const total = pokok + bunga;
-        document.getElementById('total').value = total.toLocaleString('id-ID');
-    }
+        function hitungTotal() {
+            const pokok = getNumberFromRupiah(document.getElementById('pokok').value);
+            const bunga = getNumberFromRupiah(document.getElementById('bunga').value);
+            const total = pokok + bunga;
+            document.getElementById('total').value = total.toLocaleString('id-ID');
+        }
     </script>
 
     <script src="../../assets/js/Button/button.js"></script>

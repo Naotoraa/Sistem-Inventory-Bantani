@@ -13,28 +13,28 @@ $status = 'error';
 // ========== HANDLE INSERT / UPDATE ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    $id = $_POST['id'] ?? '';
+    $id_service = $_POST['id_service'] ?? '';
 
-    // HANYA validasi id kosong saat update
-    if ($action === 'update' && empty($id)) {
+    // Validasi khusus untuk update (id_service wajib ada)
+    if ($action === 'update' && empty($id_service)) {
         header("Location: ../../pages/Expenses/services.php?status=$status");
         exit();
     }
 
-    $id_service = $_POST['id_service'] ?? '';
+    // Ambil data inputan
     $tanggal_service = $_POST['tanggal_service'] ?? '';
-    $nama_barang = $_POST['nama_barang'] ?? '';
-    $keterangan = $_POST['keterangan'] ?? ''; // ganti dari $deskripsi
-    $biaya_service = intval(str_replace('.', '', $_POST['biaya_service'] ?? '0'));
+    $nama_barang     = $_POST['nama_barang'] ?? '';
+    $keterangan      = $_POST['keterangan'] ?? '';
+    $biaya_service   = intval(str_replace('.', '', $_POST['biaya_service'] ?? '0'));
 
-    // CEK ID SERVICE WAJIB DIISI
+    // Validasi ID service wajib
     if (empty($id_service)) {
-        header("Location: services.php?status=error_idservice_kosong");
+        header("Location: ../../pages/Expenses/services.php?status=error_idservice_kosong");
         exit();
     }
 
     if ($action === 'insert') {
-        // Validasi ID unik
+        // Cek apakah id_service sudah ada
         $stmt_check = $conn->prepare("SELECT id_service FROM service WHERE id_service = ?");
         $stmt_check->bind_param("s", $id_service);
         $stmt_check->execute();
@@ -48,10 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt->close();
         }
-
         $stmt_check->close();
     } elseif ($action === 'update') {
-        // Validasi ID exist
+        // Cek apakah id_service ada di DB
         $stmt_check = $conn->prepare("SELECT id_service FROM service WHERE id_service = ?");
         $stmt_check->bind_param("s", $id_service);
         $stmt_check->execute();
@@ -65,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt->close();
         }
-
         $stmt_check->close();
     }
 
@@ -75,21 +73,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ========== HANDLE DELETE ==========
 if (isset($_GET['hapus_data'])) {
-    $id = $_GET['hapus_data'];
+    $id_service = $_GET['hapus_data'];
     $stmt = $conn->prepare("DELETE FROM service WHERE id_service = ?");
-    $stmt->bind_param("s", $id);
+    $stmt->bind_param("s", $id_service);
     $stmt->execute();
     $stmt->close();
     header("Location: ../../pages/Expenses/services.php?status=deleted");
     exit();
 }
 
-// ========== HANDLE UPDATE PREVIEW ==========
+// ========== HANDLE PREVIEW UPDATE ==========
 $data_update = null;
 if (isset($_GET['update_row'])) {
-    $id = $_GET['update_row'];
+    $id_service = $_GET['update_row'];
     $stmt = $conn->prepare("SELECT * FROM service WHERE id_service = ?");
-    $stmt->bind_param("s", $id);
+    $stmt->bind_param("s", $id_service);
     $stmt->execute();
     $result = $stmt->get_result();
     $data_update = $result->fetch_assoc();

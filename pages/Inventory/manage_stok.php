@@ -74,23 +74,33 @@ include '../../config/logic/logic_manage.php';
                     </tr>
                 </thead>
                 <tbody id="tabel-data">
-                    <?php $no = 1; ?>
-                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                    <tr>
-                        <td><?= $no++ ?></td>
-                        <td><?= $row['id_barang'] ?></td>
-                        <td><?= $row['nama_barang'] ?></td>
-                        <td><?= $row['kategori'] ?></td>
-                        <td><?= $row['stok_awal'] ?></td>
-                        <td><?= $row['barang_masuk'] ?></td>
-                        <td><?= $row['barang_keluar'] ?></td>
-                        <td><?= $row['barang_migrasi'] ?></td>
-                        <td><?= $row['barang_eror'] ?></td>
-                        <td><?= $row['stok_akhir'] ?></td>
-                        <td><?= $row['satuan'] ?></td>
-                    </tr>
-                    <?php endwhile; ?>
+                    <?php
+                    $no = 1;
+                    if (mysqli_num_rows($result) === 0): ?>
+                        <tr>
+                            <td colspan="11" style="text-align:center;">
+                                Data tidak ditemukan.
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= $row['id_barang'] ?></td>
+                                <td><?= $row['nama_barang'] ?></td>
+                                <td><?= $row['kategori'] ?></td>
+                                <td><?= $row['stok_awal'] ?></td>
+                                <td><?= $row['barang_masuk'] ?></td>
+                                <td><?= $row['barang_keluar'] ?></td>
+                                <td><?= $row['barang_migrasi'] ?></td>
+                                <td><?= $row['barang_eror'] ?></td>
+                                <td><?= $row['stok_akhir'] ?></td>
+                                <td><?= $row['satuan'] ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
                 </tbody>
+
             </table>
 
             <div class="table-bottom-container">
@@ -262,57 +272,57 @@ include '../../config/logic/logic_manage.php';
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        setupTablePagination("tabel-barang", "pagination-barang", 10);
-    });
+        document.addEventListener("DOMContentLoaded", function() {
+            setupTablePagination("tabel-barang", "pagination-barang", 10);
+        });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const select = new TomSelect("#kategori", {});
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = new TomSelect("#kategori", {});
 
-        const wrapper = document.querySelector('.ts-wrapper');
-        const icon = document.createElement('i');
-        icon.className = 'fas fa-tags icon';
-        wrapper.insertAdjacentElement('afterbegin', icon);
-    });
+            const wrapper = document.querySelector('.ts-wrapper');
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-tags icon';
+            wrapper.insertAdjacentElement('afterbegin', icon);
+        });
 
-    new TomSelect("#kategori", {
-        create: false,
-        sortField: {
-            field: "text",
-            direction: "asc"
-        },
-        placeholder: "Pilih kategori..."
-    });
+        new TomSelect("#kategori", {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "Pilih kategori..."
+        });
 
-    new TomSelect("#satuan", {
-        create: false,
-        sortField: {
-            field: "text",
-            direction: "asc"
-        },
-        placeholder: "Pilih satuan..."
-    });
+        new TomSelect("#satuan", {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "Pilih satuan..."
+        });
 
-    const namaInput = document.getElementById("nama_barang");
-    const kategoriSelect = document.getElementById("kategori");
-    const idInput = document.getElementById("id_barang");
-    const generateBtn = document.getElementById("generateBtn");
+        const namaInput = document.getElementById("nama_barang");
+        const kategoriSelect = document.getElementById("kategori");
+        const idInput = document.getElementById("id_barang");
+        const generateBtn = document.getElementById("generateBtn");
 
-    function updateIDBarangIfReady() {
-        const namaBarang = namaInput.value.trim();
-        const kategori = kategoriSelect.value;
+        function updateIDBarangIfReady() {
+            const namaBarang = namaInput.value.trim();
+            const kategori = kategoriSelect.value;
 
-        if (namaBarang && kategori) {
-            generateIDBarang();
+            if (namaBarang && kategori) {
+                generateIDBarang();
+            }
         }
-    }
 
-    namaInput.addEventListener("input", updateIDBarangIfReady);
-    kategoriSelect.addEventListener("change", updateIDBarangIfReady);
+        namaInput.addEventListener("input", updateIDBarangIfReady);
+        kategoriSelect.addEventListener("change", updateIDBarangIfReady);
 
-    // generateBtn.addEventListener("click", function() {
-    //     updateIDBarangIfReady();
-    // });
+        // generateBtn.addEventListener("click", function() {
+        //     updateIDBarangIfReady();
+        // });
     </script>
 
     <audio id="saveSound" src="assets/sound/save.mp3" preload="auto"></audio>

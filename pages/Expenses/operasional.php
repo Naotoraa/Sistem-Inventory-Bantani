@@ -2,6 +2,7 @@
 <?php
 include '../../config/conn.php';
 include '../../config/logic/logic_operasional.php';
+require '../../config/clear_cache.php';
 ?>
 
 <!DOCTYPE html>
@@ -172,8 +173,6 @@ include '../../config/logic/logic_operasional.php';
                             <?php
                             $satuanList = [
                                 "Unit",
-                                "Token",
-                                "Sewa",
                                 "Pcs",
                                 "Set",
                                 "Roll",
@@ -274,27 +273,27 @@ include '../../config/logic/logic_operasional.php';
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script>
-    const satuanSelect = new TomSelect("#satuan", {
-        create: false,
-        sortField: {
-            field: "text",
-            direction: "asc"
-        },
-        placeholder: "-- Pilih Satuan --",
-        onInitialize: function() {
-            const wrapper = this.wrapper;
-            wrapper.classList.add('ts-icon-left'); // ← Tambahkan class ke wrapper
+        const satuanSelect = new TomSelect("#satuan", {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "-- Pilih Satuan --",
+            onInitialize: function() {
+                const wrapper = this.wrapper;
+                wrapper.classList.add('ts-icon-left'); // ← Tambahkan class ke wrapper
 
-            const control = wrapper.querySelector('.ts-control');
+                const control = wrapper.querySelector('.ts-control');
 
-            // Buat ikon
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-balance-scale ts-icon'; // ← Gunakan class 'ts-icon'
+                // Buat ikon
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-balance-scale ts-icon'; // ← Gunakan class 'ts-icon'
 
-            // Masukkan ikon ke dalam ts-control
-            control.insertAdjacentElement('afterbegin', icon);
-        }
-    });
+                // Masukkan ikon ke dalam ts-control
+                control.insertAdjacentElement('afterbegin', icon);
+            }
+        });
     </script>
 
     <audio id="deleteSound" src="../../assets/sound/delete.mp3" preload="auto"></audio>

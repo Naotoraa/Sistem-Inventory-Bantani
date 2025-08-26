@@ -1,7 +1,8 @@
 <?php require_once '../../settings.php'; ?>
 <?php
 include '../../config/conn.php';
-include '../../config/logic/logic_services.php'
+include '../../config/logic/logic_services.php';
+require '../../config/clear_cache.php';
 ?>
 
 <!DOCTYPE html>
@@ -90,24 +91,24 @@ include '../../config/logic/logic_services.php'
                     if ($result->num_rows > 0) {
                         $no = 1;
                         foreach ($result as $row): ?>
-                    <tr>
-                        <td style="text-align: center;"><?= $no++; ?></td>
-                        <td><?= htmlspecialchars($row['id_service']) ?></td>
-                        <td><?= htmlspecialchars($row['nama_barang']) ?></td>
-                        <td><?= htmlspecialchars($row['keterangan']) ?></td>
-                        <td><?= htmlspecialchars($row['tanggal_service']) ?></td>
-                        <td>Rp <?= number_format($row['biaya_service'], 0, ',', '.') ?></td>
-                        <td style="text-align: center;">
-                            <button type="button" data-link="?hapus_data=<?= $row['id_service'] ?>" class="delete-btn">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
+                            <tr>
+                                <td style="text-align: center;"><?= $no++; ?></td>
+                                <td><?= htmlspecialchars($row['id_service']) ?></td>
+                                <td><?= htmlspecialchars($row['nama_barang']) ?></td>
+                                <td><?= htmlspecialchars($row['keterangan']) ?></td>
+                                <td><?= htmlspecialchars($row['tanggal_service']) ?></td>
+                                <td>Rp <?= number_format($row['biaya_service'], 0, ',', '.') ?></td>
+                                <td style="text-align: center;">
+                                    <button type="button" data-link="?hapus_data=<?= $row['id_service'] ?>" class="delete-btn">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
 
-                            <button type="button" data-link="?update_row=<?= $row['id_service'] ?>#form_edit_insert"
-                                class="edit-btn">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                                    <button type="button" data-link="?update_row=<?= $row['id_service'] ?>#form_edit_insert"
+                                        class="edit-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
                     <?php endforeach;
                     } else {
                         echo "<tr><td colspan='7' style='text-align: center;'>Tidak ada data.</td></tr>";
@@ -207,15 +208,15 @@ include '../../config/logic/logic_services.php'
     </div>
 
     <?php if (isset($_GET['status']) && $_GET['status'] === 'error_idservice_kosong'): ?>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    Swal.fire({
-        icon: 'warning',
-        title: 'ID Kosong!',
-        text: 'Silakan klik tombol Generate terlebih dahulu.',
-        confirmButtonColor: '#d33'
-    });
-    </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'ID Kosong!',
+                text: 'Silakan klik tombol Generate terlebih dahulu.',
+                confirmButtonColor: '#d33'
+            });
+        </script>
     <?php endif; ?>
     <div id="navbar-container">
         <?php include __DIR__ . '/../../partials/navbar.php'; ?>

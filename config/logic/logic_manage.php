@@ -7,92 +7,78 @@ if (!isset($_SESSION['username'])) {
 }
 
 require '../../config/conn.php';
-
-$cari = $_GET['cari'] ?? '';
+$cari  = $_GET['cari']  ?? '';
 $bulan = $_GET['bulan'] ?? date('Y-m');
+
+$first_day = $bulan . '-01';
+$next_month_first = date('Y-m-d', strtotime($first_day . ' +1 month'));
+
 $conditions = [];
-
-$bulan_sebelumnya = date('Y-m', strtotime($bulan . '-01 -1 month'));
-
 if (!empty($cari)) {
     $cari = $conn->real_escape_string($cari);
-    $conditions[] = "(b.id_barang LIKE '%$cari%' OR b.nama_barang LIKE '%$cari%' OR b.kategori LIKE '%$cari%')";
+    $conditions[] = "(b.id_barang LIKE '%$cari%' 
+                      OR b.nama_barang LIKE '%$cari%' 
+                      OR b.kategori LIKE '%$cari%')";
 }
 
-$whereClause = '';
-if (!empty($conditions)) {
-    $whereClause = 'WHERE ' . implode(' AND ', $conditions);
-}
+$whereClause = !empty($conditions) ? "WHERE " . implode(' AND ', $conditions) : "";
 
 $query = "
 SELECT 
-    b.id_barang, 
-    b.nama_barang, 
-    b.kategori, 
-    b.satuan,
+  b.id_barang, b.nama_barang, b.kategori, b.satuan,
 
-    -- Stok awal dari bulan sebelumnya
-    COALESCE((
-        SELECT 
-            COALESCE(SUM(bm_prev.qty), 0)
-            - COALESCE((SELECT SUM(qty) FROM barang_keluar WHERE id_barang = b.id_barang AND DATE_FORMAT(tanggal_keluar, '%Y-%m') = '$bulan_sebelumnya'), 0)
-            + COALESCE((SELECT SUM(qty) FROM barang_migrasi WHERE id_barang = b.id_barang AND DATE_FORMAT(tanggal, '%Y-%m') = '$bulan_sebelumnya'), 0)
-            - COALESCE((SELECT SUM(qty) FROM barang_eror WHERE id_barang = b.id_barang AND DATE_FORMAT(tanggal, '%Y-%m') = '$bulan_sebelumnya'), 0)
-        FROM barang_masuk bm_prev
-        WHERE bm_prev.id_barang = b.id_barang AND DATE_FORMAT(bm_prev.tanggal_masuk, '%Y-%m') = '$bulan_sebelumnya'
-    ), 0) AS stok_awal,
+  -- stok awal = (masuk_prev - keluar_prev + mig_prev - eror_prev)
+  (COALESCE(prev_m.masuk_prev,0) - COALESCE(prev_k.keluar_prev,0) + COALESCE(prev_g.mig_prev,0) - COALESCE(prev_e.err_prev,0)) AS stok_awal,
 
-    -- Data bulan ini
-    COALESCE(bm.total_masuk, 0) AS barang_masuk,
-    COALESCE(bk.total_keluar, 0) AS barang_keluar,
-    COALESCE(bg.total_migrasi, 0) AS barang_migrasi,
-    COALESCE(be.total_eror, 0) AS barang_eror,
+  COALESCE(cur_m.masuk,0) AS barang_masuk,
+  COALESCE(cur_k.keluar,0) AS barang_keluar,
+  COALESCE(cur_g.mig,0) AS barang_migrasi,
+  COALESCE(cur_e.err,0) AS barang_eror,
 
-    -- Stok akhir
-    (
-        COALESCE((
-            SELECT 
-                COALESCE(SUM(bm_prev.qty), 0)
-                - COALESCE((SELECT SUM(qty) FROM barang_keluar WHERE id_barang = b.id_barang AND DATE_FORMAT(tanggal_keluar, '%Y-%m') = '$bulan_sebelumnya'), 0)
-                + COALESCE((SELECT SUM(qty) FROM barang_migrasi WHERE id_barang = b.id_barang AND DATE_FORMAT(tanggal, '%Y-%m') = '$bulan_sebelumnya'), 0)
-                - COALESCE((SELECT SUM(qty) FROM barang_eror WHERE id_barang = b.id_barang AND DATE_FORMAT(tanggal, '%Y-%m') = '$bulan_sebelumnya'), 0)
-            FROM barang_masuk bm_prev
-            WHERE bm_prev.id_barang = b.id_barang AND DATE_FORMAT(bm_prev.tanggal_masuk, '%Y-%m') = '$bulan_sebelumnya'
-        ), 0)
-        + COALESCE(bm.total_masuk, 0)
-        - COALESCE(bk.total_keluar, 0)
-        + COALESCE(bg.total_migrasi, 0)
-        - COALESCE(be.total_eror, 0)
-    ) AS stok_akhir
+  (
+    (COALESCE(prev_m.masuk_prev,0) - COALESCE(prev_k.keluar_prev,0) + COALESCE(prev_g.mig_prev,0) - COALESCE(prev_e.err_prev,0))
+    + COALESCE(cur_m.masuk,0)
+    - COALESCE(cur_k.keluar,0)
+    + COALESCE(cur_g.mig,0)
+    - COALESCE(cur_e.err,0)
+  ) AS stok_akhir
 
 FROM barang b
+
+-- AGGREGATE SEBELUM FIRST_DAY (stok sampai akhir bulan sebelumnya)
 LEFT JOIN (
-    SELECT id_barang, SUM(qty) AS total_masuk 
-    FROM barang_masuk 
-    WHERE DATE_FORMAT(tanggal_masuk, '%Y-%m') = '$bulan'
-    GROUP BY id_barang
-) bm ON b.id_barang = bm.id_barang
+  SELECT id_barang, SUM(qty) AS masuk_prev FROM barang_masuk WHERE tanggal_masuk < '$first_day' GROUP BY id_barang
+) prev_m ON prev_m.id_barang = b.id_barang
 
 LEFT JOIN (
-    SELECT id_barang, SUM(qty) AS total_keluar 
-    FROM barang_keluar 
-    WHERE DATE_FORMAT(tanggal_keluar, '%Y-%m') = '$bulan'
-    GROUP BY id_barang
-) bk ON b.id_barang = bk.id_barang
+  SELECT id_barang, SUM(qty) AS keluar_prev FROM barang_keluar WHERE tanggal_keluar < '$first_day' GROUP BY id_barang
+) prev_k ON prev_k.id_barang = b.id_barang
 
 LEFT JOIN (
-    SELECT id_barang, SUM(qty) AS total_migrasi 
-    FROM barang_migrasi 
-    WHERE DATE_FORMAT(tanggal, '%Y-%m') = '$bulan'
-    GROUP BY id_barang
-) bg ON b.id_barang = bg.id_barang
+  SELECT id_barang, SUM(qty) AS mig_prev FROM barang_migrasi WHERE tanggal < '$first_day' GROUP BY id_barang
+) prev_g ON prev_g.id_barang = b.id_barang
 
 LEFT JOIN (
-    SELECT id_barang, SUM(qty) AS total_eror 
-    FROM barang_eror 
-    WHERE DATE_FORMAT(tanggal, '%Y-%m') = '$bulan'
-    GROUP BY id_barang
-) be ON b.id_barang = be.id_barang
+  SELECT id_barang, SUM(qty) AS err_prev FROM barang_eror WHERE tanggal < '$first_day' GROUP BY id_barang
+) prev_e ON prev_e.id_barang = b.id_barang
+
+-- AGGREGATE BULAN INI
+LEFT JOIN (
+  SELECT id_barang, SUM(qty) AS masuk FROM barang_masuk WHERE tanggal_masuk >= '$first_day' AND tanggal_masuk < '$next_month_first' GROUP BY id_barang
+) cur_m ON cur_m.id_barang = b.id_barang
+
+LEFT JOIN (
+  SELECT id_barang, SUM(qty) AS keluar FROM barang_keluar WHERE tanggal_keluar >= '$first_day' AND tanggal_keluar < '$next_month_first' GROUP BY id_barang
+) cur_k ON cur_k.id_barang = b.id_barang
+
+LEFT JOIN (
+  SELECT id_barang, SUM(qty) AS mig FROM barang_migrasi WHERE tanggal >= '$first_day' AND tanggal < '$next_month_first' GROUP BY id_barang
+) cur_g ON cur_g.id_barang = b.id_barang
+
+LEFT JOIN (
+  SELECT id_barang, SUM(qty) AS err FROM barang_eror WHERE tanggal >= '$first_day' AND tanggal < '$next_month_first' GROUP BY id_barang
+) cur_e ON cur_e.id_barang = b.id_barang
+
 $whereClause
 ORDER BY b.id_barang ASC
 ";
