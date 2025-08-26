@@ -56,6 +56,9 @@
             <a href="<?= $link ?>/pages/Expenses/cicilan.php" class="submenu-item">
                 <i class="fa-solid fa-money-check-dollar"></i> Cicilan
             </a>
+            <a href="<?= $link ?>/pages/Expenses/utilitas.php" class="submenu-item">
+                <i class="fa-solid fa-plug"></i> Utilitas
+            </a>
         </div>
     </div>
 
