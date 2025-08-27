@@ -110,25 +110,45 @@ document.addEventListener("DOMContentLoaded", function () {
     // HEADER TABEL
     const headers = [["No", "ID Barang", "Nama Barang", "Jumlah", "Satuan"]];
 
-    // AMBIL DATA DARI TABEL HTML
-    const rows = [];
+    // AMBIL DATA DARI TABEL HTML DAN GABUNG YANG SAMA
+    const groupedData = {}; // key = ID Barang, value = { nama, jumlah, satuan }
     let totalJumlah = 0;
+
     dataRows.forEach((tr) => {
       const cells = tr.querySelectorAll("td");
       if (cells.length >= 6) {
+        const idBarang = cells[1].innerText.trim();
+        const namaBarang = cells[2].innerText.trim();
         const jumlahRaw = cells[4].innerText.replace(/[^0-9]/g, "");
         const jumlahValue = parseInt(jumlahRaw, 10) || 0;
+        const satuan = cells[5].innerText.trim();
+
         totalJumlah += jumlahValue;
 
-        rows.push([
-          cells[0].innerText.trim(), // No
-          cells[1].innerText.trim(), // ID Barang
-          cells[2].innerText.trim(), // Nama Barang
-          cells[4].innerText.trim(), // Jumlah (QTY)
-          cells[5].innerText.trim(), // Satuan
-        ]);
+        if (groupedData[idBarang]) {
+          groupedData[idBarang].jumlah += jumlahValue;
+        } else {
+          groupedData[idBarang] = {
+            nama: namaBarang,
+            jumlah: jumlahValue,
+            satuan: satuan,
+          };
+        }
       }
     });
+
+    // Konversi ke array untuk autoTable
+    const rows = [];
+    let no = 1;
+    for (const id in groupedData) {
+      rows.push([
+        no++, // No
+        id, // ID Barang
+        groupedData[id].nama, // Nama Barang
+        groupedData[id].jumlah.toLocaleString("id-ID"), // Jumlah
+        groupedData[id].satuan, // Satuan
+      ]);
+    }
 
     // BUAT TABEL PDF
     doc.autoTable({
