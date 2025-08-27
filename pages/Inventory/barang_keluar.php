@@ -10,7 +10,7 @@ include '../../config/logic/logic_keluar.php'
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barang Keluar - Item</title>
-    <link rel="icon" href="/Gudang/assets/img/Bantani 1.png" type="image/x-icon">
+    <link rel="icon" href="../../assets/img/Bantani 1.png" type="image/x-icon">
 
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="../../assets/css/Menu/manajemen_barang.css">
@@ -140,23 +140,23 @@ include '../../config/logic/logic_keluar.php'
                     if ($result->num_rows > 0) {
                         $no = 1;
                         foreach ($result as $no => $row): ?>
-                    <tr>
-                        <td><?= $no + 1; ?></td>
-                        <td><?= htmlspecialchars($row['id_barang']) ?></td>
-                        <td><?= htmlspecialchars($row['nama_barang']) ?></td>
-                        <td><?= htmlspecialchars($row['kategori']) ?></td>
-                        <td><?= htmlspecialchars($row['qty']) ?></td>
-                        <td><?= htmlspecialchars($row['satuan']) ?></td>
-                        <td><?= htmlspecialchars($row['tanggal_keluar']) ?></td>
-                        <td>
-                            <button data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                            <button data-link="?update_row=<?= $row['id'] ?>#form_edit_insert" class="edit-btn">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                            <tr>
+                                <td><?= $no + 1; ?></td>
+                                <td><?= htmlspecialchars($row['id_barang']) ?></td>
+                                <td><?= htmlspecialchars($row['nama_barang']) ?></td>
+                                <td><?= htmlspecialchars($row['kategori']) ?></td>
+                                <td><?= htmlspecialchars($row['qty']) ?></td>
+                                <td><?= htmlspecialchars($row['satuan']) ?></td>
+                                <td><?= htmlspecialchars($row['tanggal_keluar']) ?></td>
+                                <td>
+                                    <button data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <button data-link="?update_row=<?= $row['id'] ?>#form_edit_insert" class="edit-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
                     <?php endforeach;
                     } else {
                         echo "<tr><td colspan='8'>Tidak ada data.</td></tr>";
@@ -191,10 +191,10 @@ include '../../config/logic/logic_keluar.php'
                         <?= isset($data_update) ? 'data-current-id="' . $data_update['id_barang'] . '"' : '' ?>>
                         <option value="">-- Pilih ID Barang --</option>
                         <?php foreach ($barangList as $barang): ?>
-                        <option value="<?= $barang['id_barang'] ?>" data-name="<?= $barang['nama_barang'] ?>"
-                            data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                            <?= $barang['id_barang'] ?>
-                        </option>
+                            <option value="<?= $barang['id_barang'] ?>" data-name="<?= $barang['nama_barang'] ?>"
+                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
+                                <?= $barang['id_barang'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -206,10 +206,10 @@ include '../../config/logic/logic_keluar.php'
                         <?= isset($data_update) ? 'data-current-name="' . $data_update['nama_barang'] . '"' : '' ?>>
                         <option value="">-- Pilih Nama Barang --</option>
                         <?php foreach ($barangList as $barang): ?>
-                        <option value="<?= $barang['nama_barang'] ?>" data-id="<?= $barang['id_barang'] ?>"
-                            data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                            <?= $barang['nama_barang'] ?>
-                        </option>
+                            <option value="<?= $barang['nama_barang'] ?>" data-id="<?= $barang['id_barang'] ?>"
+                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
+                                <?= $barang['nama_barang'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -260,36 +260,36 @@ include '../../config/logic/logic_keluar.php'
     </footer>
 
     <?php if (!empty($start) && !empty($end)): ?>
-    <p style="color: gray; margin-top: -10px; margin-left:30px;">Menampilkan data:
-        <strong><?= date('d M', strtotime($start)) ?> s/d
-            <?= date('d M Y', strtotime($end)) ?></strong>
-    </p>
+        <p style="color: gray; margin-top: -10px; margin-left:30px;">Menampilkan data:
+            <strong><?= date('d M', strtotime($start)) ?> s/d
+                <?= date('d M Y', strtotime($end)) ?></strong>
+        </p>
     <?php endif; ?>
 
     <?php if (isset($_GET['error']) && $_GET['error'] === 'overstock'): ?>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    Swal.fire({
-        icon: 'error',
-        title: 'Qty Melebihi Stok!',
-        text: 'Qty keluar tidak boleh melebihi stok. Stok saat ini = <?= htmlspecialchars($_GET['stok']) ?>',
-    }).then(() => {
-        history.back();
-    });
-    </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Qty Melebihi Stok!',
+                text: 'Qty keluar tidak boleh melebihi stok. Stok saat ini = <?= htmlspecialchars($_GET['stok']) ?>',
+            }).then(() => {
+                history.back();
+            });
+        </script>
     <?php endif; ?>
 
     <script>
-    function showMingguSelect() {
-        document.getElementById("minggu").style.display = "inline-block";
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const bulan = document.getElementById("bulan").value;
-        if (bulan) {
+        function showMingguSelect() {
             document.getElementById("minggu").style.display = "inline-block";
         }
-    });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const bulan = document.getElementById("bulan").value;
+            if (bulan) {
+                document.getElementById("minggu").style.display = "inline-block";
+            }
+        });
     </script>
 
     <script src="../../assets/js/Button/button.js"></script>
