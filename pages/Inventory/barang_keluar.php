@@ -90,7 +90,9 @@ include '../../config/logic/logic_keluar.php'
 
                     if (!empty($cari)) {
                         $cari = $conn->real_escape_string($cari);
-                        $conditions[] = "(id_barang LIKE '%$cari%' OR nama_barang LIKE '%$cari%' OR kategori LIKE '%$cari%')";
+                        $conditions[] = "(bk.id_barang LIKE '%$cari%' 
+                     OR b.nama_barang LIKE '%$cari%' 
+                     OR bk.kategori LIKE '%$cari%')";
                     }
 
                     if (!empty($bulan)) {
@@ -132,10 +134,10 @@ include '../../config/logic/logic_keluar.php'
                         $whereClause = 'WHERE ' . implode(' AND ', $conditions);
                     }
 
-                    $sql = "SELECT * FROM barang_keluar $whereClause ORDER BY id DESC";
+                    $sql = "
+                    SELECT bk.id, bk.id_barang, b.nama_barang, bk.kategori, bk.qty, b.satuan, bk.tanggal_keluar
+                    FROM barang_keluar bk JOIN barang b ON bk.id_barang = b.id_barang $whereClause ORDER BY bk.id DESC";
                     $result = $conn->query($sql);
-
-
 
                     if ($result->num_rows > 0) {
                         $no = 1;

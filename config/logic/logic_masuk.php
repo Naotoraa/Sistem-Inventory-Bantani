@@ -23,43 +23,54 @@ while ($row = $result->fetch_assoc()) {
     }
 }
 
-//Search Action
 $cari = $_GET['cari'] ?? '';
 $bulan = $_GET['bulan'] ?? '';
 $conditions = [];
 
 if (!empty($cari)) {
     $cari = $conn->real_escape_string($cari);
-    $conditions[] = "(id_barang LIKE '%$cari%' OR nama_barang LIKE '%$cari%' OR kategori LIKE '%$cari%')";
+    $conditions[] = "(bm.id_barang LIKE '%$cari%' 
+                     OR b.nama_barang LIKE '%$cari%' 
+                     OR b.kategori LIKE '%$cari%')";
 }
+
 if (!empty($bulan)) {
-    $conditions[] = "DATE_FORMAT(tanggal_masuk, '%Y-%m') = '$bulan'";
+    $conditions[] = "DATE_FORMAT(bm.tanggal_masuk, '%Y-%m') = '$bulan'";
 }
+
 $whereClause = '';
 if (!empty($conditions)) {
     $whereClause = 'WHERE ' . implode(' AND ', $conditions);
 }
-$sql = "SELECT * FROM barang_masuk $whereClause ORDER BY id DESC";
+
+$sql = "
+                    SELECT bm.id, bm.id_barang, b.nama_barang, bm.kategori, bm.qty, b.satuan, bm.tanggal_masuk
+                    FROM barang_masuk bm JOIN barang b ON bm.id_barang = b.id_barang $whereClause ORDER BY bm.id DESC
+                    ";
+
 $result = $conn->query($sql);
 
 //Save Action
+// ========== SAVE ACTION ==========
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
-    include '../../config/conn.php'; // pastikan koneksi ada
+    include '../../config/conn.php';
+
+    $id_barang  = $conn->real_escape_string($_POST['id_barang'] ?? '');
+    $kategori   = $conn->real_escape_string($_POST['category'] ?? '');
+    $qty        = (int) ($_POST['qty'] ?? 0);
+    $tanggal    = $conn->real_escape_string($_POST['date'] ?? '');
 
     if ($_POST['action'] == 'update') {
         $id = $conn->real_escape_string($_POST['id'] ?? '');
-        $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
-        $nama_barang = $conn->real_escape_string($_POST['name'] ?? '');
-        $kategori = $conn->real_escape_string($_POST['category'] ?? '');
-        $qty = (int) ($_POST['qty'] ?? 0);
-        $satuan = $conn->real_escape_string($_POST['satuan'] ?? '');
-        $tanggal_masuk = $conn->real_escape_string($_POST['date'] ?? '');
 
-        $sql = "UPDATE barang_masuk SET id_barang = ?, nama_barang = ?, kategori = ?, qty = ?, satuan = ?, tanggal_masuk = ? WHERE id = ?";
+        // UPDATE
+        $sql = "UPDATE barang_masuk 
+                SET id_barang = ?, kategori = ?, qty = ?, tanggal_masuk = ? 
+                WHERE id = ?";
         $stmt = $conn->prepare($sql);
 
         if ($stmt) {
-            $stmt->bind_param("sssissi", $id_barang, $nama_barang, $kategori, $qty, $satuan, $tanggal_masuk, $id);
+            $stmt->bind_param("ssisi", $id_barang, $kategori, $qty, $tanggal, $id);
             if ($stmt->execute()) {
                 echo "<script>window.location.href='../../pages/Inventory/barang_masuk.php?status=updated';</script>";
             } else {
@@ -69,21 +80,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         } else {
             echo "<script>window.location.href='../../pages/Inventory/barang_masuk.php?status=error';</script>";
         }
-
-        $conn->close();
     } elseif ($_POST['action'] == 'insert') {
-        $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
-        $nama_barang = $conn->real_escape_string($_POST['name'] ?? '');
-        $kategori = $conn->real_escape_string($_POST['category'] ?? '');
-        $qty = (int) ($_POST['qty'] ?? 0);
-        $satuan = $conn->real_escape_string($_POST['satuan'] ?? '');
-        $tanggal_masuk = $conn->real_escape_string($_POST['date'] ?? '');
-
-        $sql = "INSERT INTO barang_masuk (id_barang, nama_barang, kategori, qty, satuan, tanggal_masuk) VALUES (?, ?, ?, ?, ?, ?)";
+        // INSERT
+        $sql = "INSERT INTO barang_masuk (id_barang, kategori, qty, tanggal_masuk) 
+                VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
 
         if ($stmt) {
-            $stmt->bind_param("sssiss", $id_barang, $nama_barang, $kategori, $qty, $satuan, $tanggal_masuk);
+            $stmt->bind_param("ssis", $id_barang, $kategori, $qty, $tanggal);
             if ($stmt->execute()) {
                 echo "<script>window.location.href='../../pages/Inventory/barang_masuk.php?status=inserted';</script>";
             } else {
@@ -93,10 +97,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         } else {
             echo "<script>window.location.href='../../pages/Inventory/barang_masuk.php?status=error';</script>";
         }
-
-        $conn->close();
     }
+
+    $conn->close();
+    exit;
 }
+
 //Delete Action
 if (isset($_GET['hapus_data'])) {
     $id = $_GET['hapus_data'];
@@ -118,7 +124,12 @@ if (isset($_GET['hapus_data'])) {
 if (isset($_GET['update_row'])) {
     $id = $_GET['update_row'];
 
-    $data_update = $conn->query("SELECT * FROM barang_masuk WHERE id = '$id' LIMIT 1 ");
+    $data_update = $conn->query("
+        SELECT bm.id, bm.id_barang, b.nama_barang, bm.kategori, bm.qty, b.satuan, bm.tanggal_masuk FROM barang_masuk bm
+        JOIN barang b ON bm.id_barang = b.id_barang
+        WHERE bm.id = '$id'
+        LIMIT 1
+    ");
 
     if ($data_update->num_rows < 1) {
         echo "<script>alert('Data sudah dihapus atau tidak ada'); location.href='../../pages/Inventory/barang_masuk.php'</script>";

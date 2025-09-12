@@ -27,42 +27,53 @@ while ($row = $result->fetch_assoc()) {
 $cari = $_GET['cari'] ?? '';
 $bulan = $_GET['bulan'] ?? '';
 $conditions = [];
-
 if (!empty($cari)) {
     $cari = $conn->real_escape_string($cari);
-    $conditions[] = "(id_barang LIKE '%$cari%' OR nama_barang LIKE '%$cari%' OR kategori LIKE '%$cari%')";
+    $conditions[] = "(mg.id_barang LIKE '%$cari%' 
+                     OR b.nama_barang LIKE '%$cari%' 
+                     OR b.kategori LIKE '%$cari%')";
 }
+
 if (!empty($bulan)) {
-    $conditions[] = "DATE_FORMAT(tanggal, '%Y-%m') = '$bulan'";
+    $conditions[] = "DATE_FORMAT(mg.tanggal, '%Y-%m') = '$bulan'";
 }
+
 $whereClause = '';
 if (!empty($conditions)) {
     $whereClause = 'WHERE ' . implode(' AND ', $conditions);
 }
 
-$sql = "SELECT * FROM barang_migrasi $whereClause ORDER BY id DESC";
+$sql = "
+    SELECT mg.id, mg.id_barang, b.nama_barang, mg.kategori, mg.qty, b.satuan, mg.keterangan, mg.tanggal
+    FROM barang_migrasi mg
+    JOIN barang b ON mg.id_barang = b.id_barang
+    $whereClause
+    ORDER BY mg.id DESC
+";
 $result = $conn->query($sql);
+
 
 // ========== SAVE ACTION ==========
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
     include '../../config/conn.php';
 
-    $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
-    $nama_barang = $conn->real_escape_string($_POST['name'] ?? '');
-    $kategori = $conn->real_escape_string($_POST['category'] ?? '');
-    $qty = (int) ($_POST['qty'] ?? 0);
-    $satuan = $conn->real_escape_string($_POST['satuan'] ?? '');
-    $tanggal = $conn->real_escape_string($_POST['date'] ?? '');
+    $id_barang  = $conn->real_escape_string($_POST['id_barang'] ?? '');
+    $kategori   = $conn->real_escape_string($_POST['category'] ?? '');
+    $qty        = (int) ($_POST['qty'] ?? 0);
+    $tanggal    = $conn->real_escape_string($_POST['date'] ?? '');
     $keterangan = $conn->real_escape_string($_POST['keterangan'] ?? '');
 
     if ($_POST['action'] == 'update') {
         $id = $conn->real_escape_string($_POST['id'] ?? '');
 
-        $sql = "UPDATE barang_migrasi SET id_barang = ?, nama_barang = ?, kategori = ?, qty = ?, satuan = ?, tanggal = ?, keterangan = ? WHERE id = ?";
+        // UPDATE
+        $sql = "UPDATE barang_migrasi 
+                SET id_barang = ?, kategori = ?, qty = ?, tanggal = ?, keterangan = ? 
+                WHERE id = ?";
         $stmt = $conn->prepare($sql);
 
         if ($stmt) {
-            $stmt->bind_param("sssisssi", $id_barang, $nama_barang, $kategori, $qty, $satuan, $tanggal, $keterangan, $id);
+            $stmt->bind_param("ssissi", $id_barang, $kategori, $qty, $tanggal, $keterangan, $id);
             if ($stmt->execute()) {
                 echo "<script>window.location.href='../../pages/Inventory/barang_migrasi.php?status=updated';</script>";
             } else {
@@ -73,11 +84,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
             echo "<script>window.location.href='../../pages/Inventory/barang_migrasi.php?status=error';</script>";
         }
     } elseif ($_POST['action'] == 'insert') {
-        $sql = "INSERT INTO barang_migrasi (id_barang, nama_barang, kategori, qty, satuan, tanggal, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // INSERT
+        $sql = "INSERT INTO barang_migrasi (id_barang, kategori, qty, tanggal, keterangan) 
+                VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
 
         if ($stmt) {
-            $stmt->bind_param("sssisss", $id_barang, $nama_barang, $kategori, $qty, $satuan, $tanggal, $keterangan);
+            $stmt->bind_param("ssiss", $id_barang, $kategori, $qty, $tanggal, $keterangan);
             if ($stmt->execute()) {
                 echo "<script>window.location.href='../../pages/Inventory/barang_migrasi.php?status=inserted';</script>";
             } else {
@@ -116,7 +129,13 @@ if (isset($_GET['hapus_data'])) {
 if (isset($_GET['update_row'])) {
     $id = $_GET['update_row'];
 
-    $data_update = $conn->query("SELECT * FROM barang_migrasi WHERE id = '$id' LIMIT 1");
+    $data_update = $conn->query("
+    SELECT bm.id, bm.id_barang, b.nama_barang, bm.kategori, bm.qty, b.satuan, bm.tanggal, bm.keterangan
+    FROM barang_migrasi bm
+    JOIN barang b ON bm.id_barang = b.id_barang
+    WHERE bm.id = '$id'
+    LIMIT 1
+");
 
     if ($data_update->num_rows < 1) {
         echo "<script>alert('Data sudah dihapus atau tidak ada'); location.href='../../pages/Inventory/barang_migrasi.php'</script>";

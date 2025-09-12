@@ -33,7 +33,9 @@ $conditions = [];
 // Filter pencarian
 if (!empty($cari)) {
     $cari = $conn->real_escape_string($cari);
-    $conditions[] = "(id_barang LIKE '%$cari%' OR nama_barang LIKE '%$cari%' OR kategori LIKE '%$cari%')";
+    $conditions[] = "(bk.id_barang LIKE '%$cari%' 
+                     OR b.nama_barang LIKE '%$cari%' 
+                     OR bk.kategori LIKE '%$cari%')";
 }
 
 // Filter bulan dan minggu
@@ -74,7 +76,13 @@ if (!empty($conditions)) {
     $whereClause = 'WHERE ' . implode(' AND ', $conditions);
 }
 
-$sql = "SELECT * FROM barang_keluar $whereClause ORDER BY id DESC";
+$sql = "
+    SELECT bk.id, bk.id_barang, b.nama_barang, bk.kategori, bk.qty, b.satuan, bk.tanggal_keluar
+    FROM barang_keluar bk
+    JOIN barang b ON bk.id_barang = b.id_barang
+    $whereClause
+    ORDER BY bk.id DESC
+";
 $result = $conn->query($sql);
 
 
@@ -88,15 +96,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $nama_barang = $conn->real_escape_string($_POST['name'] ?? '');
         $kategori = $conn->real_escape_string($_POST['category'] ?? '');
 
-
         $qty = (int) ($_POST['qty'] ?? 0);
 
         function getStokSaatIni($conn, $id_barang)
         {
-            $masuk   = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_masuk WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $keluar  = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_keluar WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+            $masuk = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_masuk WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+            $keluar = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_keluar WHERE id_barang = '$id_barang'"))['total'] ?? 0;
             $migrasi = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_migrasi WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $eror    = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_eror WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+            $eror = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_eror WHERE id_barang = '$id_barang'"))['total'] ?? 0;
 
             return $masuk - $keluar + $migrasi - $eror;
         }
@@ -111,35 +118,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $satuan = $conn->real_escape_string($_POST['satuan'] ?? '');
         $tanggal_keluar = $conn->real_escape_string($_POST['date'] ?? '');
 
-        $sql = "UPDATE barang_keluar SET id_barang = ?, nama_barang = ?, kategori = ?, qty = ?, satuan = ?, tanggal_keluar = ? WHERE id = ?";
+        $sql = "UPDATE barang_keluar 
+        SET id_barang = ?, kategori = ?, qty = ?, tanggal_keluar = ? 
+        WHERE id = ?";
         $stmt = $conn->prepare($sql);
 
         if ($stmt) {
-            $stmt->bind_param("sssissi", $id_barang, $nama_barang, $kategori, $qty, $satuan, $tanggal_keluar, $id);
+            $stmt->bind_param("ssisi", $id_barang, $kategori, $qty, $tanggal_keluar, $id);
             if ($stmt->execute()) {
                 echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=updated';</script>";
             } else {
                 echo "<script>alert('Gagal Update: " . addslashes($stmt->error) . "');</script>";
             }
             $stmt->close();
-        } else {
-            echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=error';</script>";
         }
-
-        $conn->close();
     } elseif ($_POST['action'] == 'insert') {
         $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
         $nama_barang = $conn->real_escape_string($_POST['name'] ?? '');
         $kategori = $conn->real_escape_string($_POST['category'] ?? '');
-
         $qty = (int) ($_POST['qty'] ?? 0);
 
         function getStokSaatIni($conn, $id_barang)
         {
-            $masuk   = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_masuk WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $keluar  = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_keluar WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+            $masuk = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_masuk WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+            $keluar = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_keluar WHERE id_barang = '$id_barang'"))['total'] ?? 0;
             $migrasi = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_migrasi WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $eror    = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_eror WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+            $eror = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_eror WHERE id_barang = '$id_barang'"))['total'] ?? 0;
 
             return $masuk - $keluar + $migrasi - $eror;
         }
@@ -154,11 +158,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $satuan = $conn->real_escape_string($_POST['satuan'] ?? '');
         $tanggal_keluar = $conn->real_escape_string($_POST['date'] ?? '');
 
-        $sql = "INSERT INTO barang_keluar (id_barang, nama_barang, kategori, qty, satuan, tanggal_keluar) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO barang_keluar (id_barang, kategori, qty, tanggal_keluar) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
 
         if ($stmt) {
-            $stmt->bind_param("sssiss", $id_barang, $nama_barang, $kategori, $qty, $satuan, $tanggal_keluar);
+            $stmt->bind_param("ssis", $id_barang, $kategori, $qty, $tanggal_keluar);
+
             if ($stmt->execute()) {
                 echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=inserted';</script>";
             } else {

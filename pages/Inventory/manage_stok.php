@@ -1,6 +1,8 @@
 <?php require_once '../../settings.php'; ?>
 <?php
 include '../../config/logic/logic_manage.php';
+require '../../config/update_modal.php';
+
 ?>
 
 <!DOCTYPE html>
@@ -18,11 +20,19 @@ include '../../config/logic/logic_manage.php';
     <link rel="stylesheet" href="../../assets/css/Partials/sidebar.css">
     <link rel="stylesheet" href="../../assets/css/Partials/footer.css">
     <link rel="stylesheet" href="../../assets/css/Opsional/pagination.css">
+    <link rel="stylesheet" href="../../assets/css/Opsional/modal.css">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JS (wajib untuk modal bisa jalan) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
 
 
@@ -87,7 +97,14 @@ include '../../config/logic/logic_manage.php';
                             <tr>
                                 <td><?= $no++ ?></td>
                                 <td><?= $row['id_barang'] ?></td>
-                                <td><?= $row['nama_barang'] ?></td>
+
+                                <td>
+                                    <a href="#" class="link-nama" data-bs-toggle="modal"
+                                        data-bs-target="#modal<?= $row['id_barang'] ?>">
+                                        <?= $row['nama_barang'] ?>
+                                    </a>
+                                </td>
+
                                 <td><?= $row['kategori'] ?></td>
                                 <td><?= $row['stok_awal'] ?></td>
                                 <td><?= $row['barang_masuk'] ?></td>
@@ -97,11 +114,113 @@ include '../../config/logic/logic_manage.php';
                                 <td><?= $row['stok_akhir'] ?></td>
                                 <td><?= $row['satuan'] ?></td>
                             </tr>
+
+                            <!-- Modal khusus untuk barang ini -->
+                            <div class="modal fade" id="modal<?= $row['id_barang'] ?>" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+
+                                        <!-- Header hijau -->
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Detail Barang</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <!-- Body -->
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>ID Barang</strong></label>
+                                                <input type="text" class="form-control" value="<?= $row['id_barang'] ?>"
+                                                    readonly>
+                                            </div>
+
+
+
+
+
+                                            <div class="mb-3 d-flex">
+                                                <div class="flex-grow-1 me-2">
+                                                    <label class="form-label"><strong>Nama Barang</strong></label>
+                                                    <input type="text" class="form-control"
+                                                        id="nama_barang_<?= $row['id_barang'] ?>"
+                                                        value="<?= $row['nama_barang'] ?>" readonly>
+                                                </div>
+                                                <button class="btn btn-primary align-self-end btn-edit"
+                                                    data-id="<?= $row['id_barang'] ?>" data-field="nama_barang">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+
+
+
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>Kategori</strong></label>
+                                                <input type="text" class="form-control" value="<?= $row['kategori'] ?>"
+                                                    readonly>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-4 mb-3">
+                                                    <label class="form-label">Stok Awal</label>
+                                                    <input type="text" class="form-control input-bold-center"
+                                                        value="<?= $row['stok_awal'] ?>" readonly>
+                                                </div>
+                                                <div class="col-4 mb-3">
+                                                    <label class="form-label">Barang Masuk</label>
+                                                    <input type="text" class="form-control input-bold-center"
+                                                        value="<?= $row['barang_masuk'] ?>" readonly>
+                                                </div>
+                                                <div class="col-4 mb-3">
+                                                    <label class="form-label">Barang Migrasi</label>
+                                                    <input type="text" class="form-control input-bold-center"
+                                                        value="<?= $row['barang_migrasi'] ?>" readonly>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-4 mb-3">
+                                                    <label class="form-label">Stok Akhir</label>
+                                                    <input type="text" class="form-control input-bold-center"
+                                                        value="<?= $row['stok_akhir'] ?>" readonly>
+                                                </div>
+                                                <div class="col-4 mb-3">
+                                                    <label class="form-label">Barang Keluar</label>
+                                                    <input type="text" class="form-control input-bold-center"
+                                                        value="<?= $row['barang_keluar'] ?>" readonly>
+                                                </div>
+                                                <div class="col-4 mb-3">
+                                                    <label class="form-label">Barang Error</label>
+                                                    <input type="text" class="form-control input-bold-center"
+                                                        value="<?= $row['barang_eror'] ?>" readonly>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3 d-flex">
+                                                <div class="flex-grow-1 me-2">
+                                                    <label class="form-label"><strong>Satuan</strong></label>
+                                                    <input type="text" class="form-control" id="satuan_<?= $row['id_barang'] ?>"
+                                                        value="<?= $row['satuan'] ?>" readonly>
+                                                </div>
+                                                <button class="btn btn-primary align-self-end btn-edit"
+                                                    data-id="<?= $row['id_barang'] ?>" data-field="satuan">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         <?php endwhile; ?>
                     <?php endif; ?>
                 </tbody>
 
+
             </table>
+
+
 
             <div class="table-bottom-container">
                 <div class="under_table">
@@ -262,6 +381,7 @@ include '../../config/logic/logic_manage.php';
     <script src="../../assets/js/Button/button_save.js"></script>
     <script src="../../assets/js/Opsional/foto_option.js"></script>
     <script src="../../assets/js/Opsional/pagination.js"></script>
+    <script src="../../assets/js/Opsional/modal.js"></script>
     <script src="../../assets/js/Generate/generate_IDbarang.js"></script>
     <script src="../../assets/js/Eksport/eksport_manage.js"></script>
 

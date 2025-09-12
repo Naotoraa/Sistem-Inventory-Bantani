@@ -1,0 +1,100 @@
+/* Efek animasi modal */
+.modal.fade .modal-dialog {
+  transform: translateY(-20px);
+  transition: all 0.3s ease-out;
+}
+.modal.show .modal-dialog {
+  transform: translateY(0);
+}
+
+/* Desain card modal */
+.modal-content {
+  border-radius: 12px;
+  border: 1px solid #dcdcdc;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  background: #fff;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Header modal hijau */
+.modal-header {
+  border-bottom: none;
+  background: #689f38; /* hijau polos */
+  color: #fff;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+.modal-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Tombol close */
+.btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+  transition: 0.2s;
+}
+.btn-close:hover {
+  opacity: 1;
+  transform: rotate(90deg);
+}
+
+/* Body modal */
+.modal-body {
+  padding: 20px;
+  font-size: 0.95rem;
+  color: #333;
+}
+.modal-body p {
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #f8f9fa;
+  border: 1px solid #e6e6e6;
+  transition: 0.2s;
+}
+.modal-body p:hover {
+  background: #eef5f0;
+  transform: scale(1.01);
+}
+
+/* Animasi fade */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Link nama barang */
+.link-nama {
+  color: #28a745;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+.link-nama:hover {
+  color: #218838;
+  text-decoration: underline;
+}
+
+.form-label {
+  font-weight: bold;
+}
+
+.form-control {
+  border: 1px solid #999 !important; /* hijau lebih tebal */
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  transition: 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #218838 !important;
+  box-shadow: 0 0 8px rgba(40, 167, 69, 0.6) !important;
+}

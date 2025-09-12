@@ -70,47 +70,48 @@ include '../../config/logic/logic_migrasi.php'
                     <?php
                     $cari = $_GET['cari'] ?? '';
                     $bulan = $_GET['bulan'] ?? '';
-
                     $conditions = [];
-
                     if (!empty($cari)) {
                         $cari = $conn->real_escape_string($cari);
-                        $conditions[] = "(id_barang LIKE '%$cari%' OR nama_barang LIKE '%$cari%' OR kategori LIKE '%$cari%')";
+                        $conditions[] = "(mg.id_barang LIKE '%$cari%' 
+                     OR b.nama_barang LIKE '%$cari%' 
+                     OR b.kategori LIKE '%$cari%')";
                     }
 
                     if (!empty($bulan)) {
-                        $conditions[] = "DATE_FORMAT(tanggal, '%Y-%m') = '$bulan'";
+                        $conditions[] = "DATE_FORMAT(mg.tanggal, '%Y-%m') = '$bulan'";
                     }
 
                     $whereClause = '';
                     if (!empty($conditions)) {
                         $whereClause = 'WHERE ' . implode(' AND ', $conditions);
                     }
-
-                    $sql = "SELECT * FROM barang_migrasi $whereClause ORDER BY id DESC";
+                    $sql = "
+                    SELECT mg.id, mg.id_barang, b.nama_barang, mg.kategori, mg.qty, b.satuan, mg.keterangan, mg.tanggal
+                    FROM barang_migrasi mg JOIN barang b ON mg.id_barang = b.id_barang $whereClause ORDER BY mg.id DESC";
                     $result = $conn->query($sql);
 
                     if ($result->num_rows > 0) {
                         $no = 1;
                         foreach ($result as $no => $row): ?>
-                    <tr>
-                        <td><?= $no + 1; ?></td>
-                        <td><?= htmlspecialchars($row['id_barang']) ?></td>
-                        <td><?= htmlspecialchars($row['nama_barang']) ?></td>
-                        <td><?= htmlspecialchars($row['kategori']) ?></td>
-                        <td><?= htmlspecialchars($row['qty']) ?></td>
-                        <td><?= htmlspecialchars($row['satuan']) ?></td>
-                        <td><?= htmlspecialchars($row['keterangan']) ?></td>
-                        <td><?= htmlspecialchars($row['tanggal']) ?></td>
-                        <td>
-                            <button data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                            <button data-link="?update_row=<?= $row['id'] ?>#form_edit_insert" class="edit-btn">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                            <tr>
+                                <td><?= $no + 1; ?></td>
+                                <td><?= htmlspecialchars($row['id_barang']) ?></td>
+                                <td><?= htmlspecialchars($row['nama_barang']) ?></td>
+                                <td><?= htmlspecialchars($row['kategori']) ?></td>
+                                <td><?= htmlspecialchars($row['qty']) ?></td>
+                                <td><?= htmlspecialchars($row['satuan']) ?></td>
+                                <td><?= htmlspecialchars($row['keterangan']) ?></td>
+                                <td><?= htmlspecialchars($row['tanggal']) ?></td>
+                                <td>
+                                    <button data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <button data-link="?update_row=<?= $row['id'] ?>#form_edit_insert" class="edit-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
                     <?php endforeach;
                     } else {
                         echo "<tr><td colspan='8'>Tidak ada data.</td></tr>";
@@ -141,10 +142,10 @@ include '../../config/logic/logic_migrasi.php'
                         <?= isset($data_update) ? 'data-current-id="' . $data_update['id_barang'] . '"' : '' ?>>
                         <option value="">-- Pilih ID Barang --</option>
                         <?php foreach ($barangList as $barang): ?>
-                        <option value="<?= $barang['id_barang'] ?>" data-name="<?= $barang['nama_barang'] ?>"
-                            data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                            <?= $barang['id_barang'] ?>
-                        </option>
+                            <option value="<?= $barang['id_barang'] ?>" data-name="<?= $barang['nama_barang'] ?>"
+                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
+                                <?= $barang['id_barang'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -156,10 +157,10 @@ include '../../config/logic/logic_migrasi.php'
                         <?= isset($data_update) ? 'data-current-name="' . $data_update['nama_barang'] . '"' : '' ?>>
                         <option value="">-- Pilih Nama Barang --</option>
                         <?php foreach ($barangList as $barang): ?>
-                        <option value="<?= $barang['nama_barang'] ?>" data-id="<?= $barang['id_barang'] ?>"
-                            data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                            <?= $barang['nama_barang'] ?>
-                        </option>
+                            <option value="<?= $barang['nama_barang'] ?>" data-id="<?= $barang['id_barang'] ?>"
+                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
+                                <?= $barang['nama_barang'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -184,7 +185,6 @@ include '../../config/logic/logic_migrasi.php'
                         value="<?= isset($data_update['satuan']) ? ucfirst($data_update['satuan']) : '' ?>">
                 </div>
 
-
                 <div class="form-group-card" id="tanggal_masuk" onclick="document.getElementById('date').showPicker()">
                     <label for="date">Tanggal</label>
                     <i class="fas fa-calendar-alt"></i>
@@ -196,7 +196,8 @@ include '../../config/logic/logic_migrasi.php'
                     <label for="keterangan">Keterangan</label>
                     <i class="fas fa-info-circle" style="margin-top: -27px;"></i>
                     <textarea name="keterangan" id="keterangan" rows="3" placeholder="Masukkan keterangan tambahan..."
-                        style="width: 100%; resize: vertical;"><?= isset($data_update) ? $data_update['keterangan'] : '' ?></textarea>
+                        style="width: 100%; resize: vertical;"
+                        required><?= isset($data_update) ? $data_update['keterangan'] : '' ?></textarea>
                 </div>
 
                 <div class="form-actions">
