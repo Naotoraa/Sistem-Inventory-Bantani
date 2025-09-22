@@ -52,7 +52,6 @@ require '../../config/clear_cache.php';
                     </div>
                 </div>
             </form>
-
             <table id="Table">
                 <thead id="tabel-expenses">
                     <tr>
@@ -69,23 +68,31 @@ require '../../config/clear_cache.php';
                 </thead>
                 <tbody id="tabel-data">
                     <?php
-                    $cari = $_GET['cari'] ?? '';
+                    $cari  = $_GET['cari'] ?? '';
                     $bulan = $_GET['bulan'] ?? '';
                     $conditions = [];
-                    if (!empty($cari))
-                        $conditions[] = "nama_barang LIKE '%$cari%'";
-                    if (!empty($bulan))
-                        $conditions[] = "DATE_FORMAT(tanggal_cicilan, '%Y-%m') = '$bulan'";
-                    $whereClause = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
+                    if (!empty($cari)) {
+                        $conditions[] = "nama_barang LIKE '%" . $conn->real_escape_string($cari) . "%'";
+                    }
+                    if (!empty($bulan)) {
+                        $conditions[] = "DATE_FORMAT(tanggal_cicilan, '%Y-%m') = '" . $conn->real_escape_string($bulan) . "'";
+                    }
+
+                    $whereClause = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
                     $sql = "SELECT * FROM cicilan $whereClause ORDER BY tanggal_cicilan DESC";
                     $result = $conn->query($sql);
+
                     $no = 1;
-                    if ($result->num_rows > 0):
+                    if ($result && $result->num_rows > 0):
                         foreach ($result as $row): ?>
                             <tr>
-                                <td><?= $no++ ?></td>
-                                <td><?= htmlspecialchars($row['no_cicilan']) ?></td>
+                                <!-- Nomor urut (hanya untuk tampilan) -->
+                                <td style="text-align: center;"><?= $no++ ?></td>
+
+                                <!-- Plat nomor / No Cicilan -->
+                                <td style="text-align: center;"><?= htmlspecialchars($row['no_cicilan']) ?></td>
+
                                 <td><?= htmlspecialchars($row['nama_barang']) ?></td>
                                 <td><?= htmlspecialchars($row['tanggal_cicilan']) ?></td>
                                 <td>Rp <?= number_format($row['pokok_cicilan'], 0, ',', '.') ?></td>
@@ -93,22 +100,25 @@ require '../../config/clear_cache.php';
                                 <td>Rp <?= number_format($row['total_cicilan'], 0, ',', '.') ?></td>
                                 <td><?= htmlspecialchars($row['keterangan']) ?></td>
                                 <td style="text-align: center;">
-                                    <button type="button" class="delete-btn" data-link="?hapus_data=<?= $row['no_cicilan'] ?>">
+                                    <button class="delete-btn" data-link="?hapus_data=<?= $row['id_cicilan'] ?>">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    <button type="button" class="edit-btn"
-                                        data-link="?update_row=<?= $row['no_cicilan'] ?>#form_edit_insert">
+
+                                    <button class="edit-btn" data-link="?update_row=<?= $row['id_cicilan'] ?>#form_edit_insert">
                                         <i class="fas fa-edit"></i>
                                     </button>
+
                                 </td>
                             </tr>
-                    <?php endforeach;
-                    else:
-                        echo "<tr><td colspan='9' style='text-align: center;'>Tidak ada data.</td></tr>";
-                    endif;
-                    ?>
+                        <?php endforeach;
+                    else: ?>
+                        <tr>
+                            <td colspan="9" style="text-align: center;">Tidak ada data.</td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
+
 
             <div class="table-bottom-container">
                 <div class="under_table">
@@ -131,16 +141,16 @@ require '../../config/clear_cache.php';
             ?>
             <form action="cicilan.php" method="POST">
                 <input type="hidden" name="action" value="<?= isset($data_update) ? 'update' : 'insert' ?>">
+                <input type="hidden" name="id_cicilan" value="<?= $data_update['id_cicilan'] ?? '' ?>">
                 <input type="hidden" name="no_cicilan" value="<?= $data_update['no_cicilan'] ?? $no_cicilan ?>">
 
                 <div class="form-group-card">
                     <label>No Cicilan</label>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-hashtag"></i>
-                        <input type="text" name="no_cicilan" required placeholder="Contoh: A 6502 SH"
-                            value="<?= $data_update['no_cicilan'] ?? '' ?>"
-                            class="<?= isset($data_update) ? 'readonly-input' : '' ?>"
-                            <?= isset($data_update) ? 'readonly' : '' ?> style="flex: 1;">
+                        <input type="text" name="no_cicilan" required placeholder="Contoh: A 3892 GH"
+                            value="<?= $data_update['no_cicilan'] ?? '' ?>" <?= isset($data_update) ? 'readonly' : '' ?>
+                            class="<?= isset($data_update) ? 'readonly-input' : '' ?>" style="flex: 1;">
                     </div>
                 </div>
 
