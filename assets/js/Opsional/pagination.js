@@ -41,14 +41,30 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     paginationContainer.appendChild(prev);
 
-    // Nomor Halaman
-    for (let i = 1; i <= totalPages; i++) {
+    // Nomor Halaman (dibatesin cuma 5)
+    const maxVisible = 5;
+    let startPage = currentPage - Math.floor(maxVisible / 2);
+    let endPage = currentPage + Math.floor(maxVisible / 2);
+
+    if (startPage < 1) {
+      startPage = 1;
+      endPage = Math.min(totalPages, maxVisible);
+    }
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(1, totalPages - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
       const pageBtn = document.createElement("div");
       pageBtn.className = "pag-link";
       pageBtn.innerText = i;
+
       if (i === currentPage) {
         pageBtn.classList.add("active");
       }
+
       pageBtn.addEventListener("click", () => showPage(i));
       paginationContainer.appendChild(pageBtn);
     }
