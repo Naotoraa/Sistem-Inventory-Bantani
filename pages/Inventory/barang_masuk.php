@@ -1,9 +1,9 @@
-<?php require_once '../../settings.php'; ?>
-
 <?php
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
+
+require_once '../../settings.php';
 include '../../config/logic/logic_masuk.php';
 $barangList = [];
 $satuanSet = [];
@@ -91,77 +91,77 @@ if ($queryBarang) {
                 </thead>
                 <tbody id="tabel-data">
                     <?php
-    // 1. Siapkan palet warna aesthetic
-    $palet_warna = [
-        ['bg' => '#fce8e8', 'text' => '#a72828'], // Merah muda
-        ['bg' => '#e3f2fd', 'text' => '#1565c0'], // Biru pastel
-        ['bg' => '#e8f5e9', 'text' => '#2e7d32'], // Hijau mint
-        ['bg' => '#fff3e0', 'text' => '#ef6c00'], // Oranye soft
-        ['bg' => '#f3e5f5', 'text' => '#6a1b9a'], // Ungu lilac
-        ['bg' => '#fef9e7', 'text' => '#b9770e'], // Kuning aesthetic
-        ['bg' => '#e0f7fa', 'text' => '#00838f']  // Cyan laut
-    ];
+                    // 1. Siapkan palet warna aesthetic
+                    $palet_warna = [
+                        ['bg' => '#fce8e8', 'text' => '#a72828'], // Merah muda
+                        ['bg' => '#e3f2fd', 'text' => '#1565c0'], // Biru pastel
+                        ['bg' => '#e8f5e9', 'text' => '#2e7d32'], // Hijau mint
+                        ['bg' => '#fff3e0', 'text' => '#ef6c00'], // Oranye soft
+                        ['bg' => '#f3e5f5', 'text' => '#6a1b9a'], // Ungu lilac
+                        ['bg' => '#fef9e7', 'text' => '#b9770e'], // Kuning aesthetic
+                        ['bg' => '#e0f7fa', 'text' => '#00838f']  // Cyan laut
+                    ];
 
-    $cari = $_GET['cari'] ?? '';
-    $bulan = $_GET['bulan'] ?? '';
-    $conditions = [];
+                    $cari = $_GET['cari'] ?? '';
+                    $bulan = $_GET['bulan'] ?? '';
+                    $conditions = [];
 
-    if (!empty($cari)) {
-        $cari = $conn->real_escape_string($cari);
-        $conditions[] = "(bm.id_barang LIKE '%$cari%' 
+                    if (!empty($cari)) {
+                        $cari = $conn->real_escape_string($cari);
+                        $conditions[] = "(bm.id_barang LIKE '%$cari%' 
                      OR b.nama_barang LIKE '%$cari%' 
                      OR b.kategori LIKE '%$cari%')";
-    }
+                    }
 
-    if (!empty($bulan)) {
-        $conditions[] = "DATE_FORMAT(bm.tanggal_masuk, '%Y-%m') = '$bulan'";
-    }
+                    if (!empty($bulan)) {
+                        $conditions[] = "DATE_FORMAT(bm.tanggal_masuk, '%Y-%m') = '$bulan'";
+                    }
 
-    $whereClause = '';
-    if (!empty($conditions)) {
-        $whereClause = 'WHERE ' . implode(' AND ', $conditions);
-    }
+                    $whereClause = '';
+                    if (!empty($conditions)) {
+                        $whereClause = 'WHERE ' . implode(' AND ', $conditions);
+                    }
 
-    $sql = "SELECT bm.id, bm.id_barang, b.nama_barang, bm.kategori, bm.qty, b.satuan, bm.tanggal_masuk
+                    $sql = "SELECT bm.id, bm.id_barang, b.nama_barang, bm.kategori, bm.qty, b.satuan, bm.tanggal_masuk
             FROM barang_masuk bm JOIN barang b ON bm.id_barang = b.id_barang $whereClause ORDER BY bm.id DESC";
 
-    $result = $conn->query($sql);
+                    $result = $conn->query($sql);
 
-    if ($result && $result->num_rows > 0) {
-        $no = 1;
-        foreach ($result as $row): 
-            // 2. Tentukan warna konsisten berdasarkan nama barang
-            $index_warna = abs(crc32($row['nama_barang'])) % count($palet_warna);
-            $warna_terpilih = $palet_warna[$index_warna];
-    ?>
-                    <tr>
-                        <td><?= $no++; ?></td>
-                        <td><?= htmlspecialchars($row['id_barang']) ?></td>
-                        <td>
-                            <span class="badge-dinamis"
-                                style="background-color: <?= $warna_terpilih['bg'] ?>; color: <?= $warna_terpilih['text'] ?>;">
-                                <?= htmlspecialchars($row['nama_barang']) ?>
-                            </span>
-                        </td>
-                        <td><?= htmlspecialchars($row['kategori']) ?></td>
-                        <td><?= htmlspecialchars($row['qty']) ?></td>
-                        <td><?= htmlspecialchars($row['satuan']) ?></td>
-                        <td><?= htmlspecialchars($row['tanggal_masuk']) ?></td>
-                        <td>
-                            <button type="button" data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                            <button type="button" data-link="?update_row=<?= $row['id'] ?>#form_edit_insert"
-                                class="edit-btn">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                    if ($result && $result->num_rows > 0) {
+                        $no = 1;
+                        foreach ($result as $row):
+                            // 2. Tentukan warna konsisten berdasarkan nama barang
+                            $index_warna = abs(crc32($row['nama_barang'])) % count($palet_warna);
+                            $warna_terpilih = $palet_warna[$index_warna];
+                    ?>
+                            <tr>
+                                <td><?= $no++; ?></td>
+                                <td><?= htmlspecialchars($row['id_barang']) ?></td>
+                                <td>
+                                    <span class="badge-dinamis"
+                                        style="background-color: <?= $warna_terpilih['bg'] ?>; color: <?= $warna_terpilih['text'] ?>;">
+                                        <?= htmlspecialchars($row['nama_barang']) ?>
+                                    </span>
+                                </td>
+                                <td><?= htmlspecialchars($row['kategori']) ?></td>
+                                <td><?= htmlspecialchars($row['qty']) ?></td>
+                                <td><?= htmlspecialchars($row['satuan']) ?></td>
+                                <td><?= htmlspecialchars($row['tanggal_masuk']) ?></td>
+                                <td>
+                                    <button type="button" data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <button type="button" data-link="?update_row=<?= $row['id'] ?>#form_edit_insert"
+                                        class="edit-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
                     <?php endforeach;
-    } else {
-        echo "<tr><td colspan='8'>Tidak ada data.</td></tr>";
-    }
-    ?>
+                    } else {
+                        echo "<tr><td colspan='8'>Tidak ada data.</td></tr>";
+                    }
+                    ?>
                 </tbody>
             </table>
             <div class="table-bottom-container">
@@ -189,13 +189,13 @@ if ($queryBarang) {
                         <option value="" disabled <?= !isset($data_update) ? 'selected' : '' ?>>-- Pilih ID Barang --
                         </option>
                         <?php foreach ($barangList as $barang): ?>
-                        <option value="<?= $barang['id_barang'] ?>"
-                            <?= (isset($data_update) && $data_update['id_barang'] == $barang['id_barang']) ? 'selected' : '' ?>
-                            data-nama="<?= htmlspecialchars($barang['nama_barang'] ?? '') ?>"
-                            data-category="<?= htmlspecialchars($barang['kategori'] ?? '') ?>"
-                            data-satuan="<?= htmlspecialchars($barang['satuan'] ?? '') ?>">
-                            <?= htmlspecialchars($barang['id_barang']) ?>
-                        </option>
+                            <option value="<?= $barang['id_barang'] ?>"
+                                <?= (isset($data_update) && $data_update['id_barang'] == $barang['id_barang']) ? 'selected' : '' ?>
+                                data-nama="<?= htmlspecialchars($barang['nama_barang'] ?? '') ?>"
+                                data-category="<?= htmlspecialchars($barang['kategori'] ?? '') ?>"
+                                data-satuan="<?= htmlspecialchars($barang['satuan'] ?? '') ?>">
+                                <?= htmlspecialchars($barang['id_barang']) ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -208,12 +208,12 @@ if ($queryBarang) {
                         <option value="" disabled <?= !isset($data_update) ? 'selected' : '' ?>>-- Pilih Nama Barang --
                         </option>
                         <?php foreach ($barangList as $barang): ?>
-                        <option value="<?= $barang['nama_barang'] ?>"
-                            <?= (isset($data_update) && $data_update['nama_barang'] == $barang['nama_barang']) ? 'selected' : '' ?>
-                            data-id="<?= $barang['id_barang'] ?>" data-category="<?= $barang['kategori'] ?>"
-                            data-satuan="<?= $barang['satuan'] ?>">
-                            <?= $barang['nama_barang'] ?>
-                        </option>
+                            <option value="<?= $barang['nama_barang'] ?>"
+                                <?= (isset($data_update) && $data_update['nama_barang'] == $barang['nama_barang']) ? 'selected' : '' ?>
+                                data-id="<?= $barang['id_barang'] ?>" data-category="<?= $barang['kategori'] ?>"
+                                data-satuan="<?= $barang['satuan'] ?>">
+                                <?= $barang['nama_barang'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
