@@ -1,9 +1,9 @@
-<?php require_once '../../settings.php'; ?>
-
 <?php
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
+
+require_once '../../settings.php';
 include '../../config/logic/logic_eror.php';
 $barangList = [];
 $queryBarang = mysqli_query($conn, "SELECT * FROM barang ORDER BY nama_barang ASC");
