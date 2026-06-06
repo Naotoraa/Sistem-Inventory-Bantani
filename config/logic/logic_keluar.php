@@ -91,6 +91,7 @@ $sql = "
     ORDER BY bk.tanggal_keluar DESC
 ";
 $result = $conn->query($sql);
+
 // ========== SAVE ACTION ==========
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
 
@@ -116,7 +117,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $qty = (int) ($_POST['qty'] ?? 0);
         $tanggal_keluar = $conn->real_escape_string($_POST['date'] ?? '');
 
-        // Cek darurat biar data aman
         if (empty($id_barang) || empty($tanggal_keluar) || $qty <= 0) {
             echo "<script>alert('Gagal: Data tidak boleh kosong dan QTY harus lebih dari 0!'); window.history.back();</script>";
             exit;
@@ -137,7 +137,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $del->execute();
         $del->close();
 
-        // ✨ INSERT ULANG (HASIL EDIT)
         $insert = $conn->prepare("
             INSERT INTO barang_keluar (id_barang, kategori, qty, tanggal_keluar)
             VALUES (?, ?, ?, ?)
@@ -151,10 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         }
         $insert->close();
         exit;
-    }
-
-    // ➕ INSERT (TAMBAH DATA)
-    elseif ($_POST['action'] == 'insert') {
+    } elseif ($_POST['action'] == 'insert') {
 
         $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
         $kategori = $conn->real_escape_string($_POST['category'] ?? '');
@@ -170,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $stok = getStokSaatIni($conn, $id_barang);
 
         if ($qty > $stok) {
-            echo "<script>alert('Gagal: Stok tidak mencukupi! Stok saat ini: $stok'); window.history.back();</script>";
+            header("Location: ../../pages/Inventory/barang_keluar.php?error=overstock&stok=$stok");
             exit;
         }
 
@@ -220,8 +216,6 @@ if (isset($_GET['update_row']) && isset($_GET['tgl'])) {
 
     $id_barang = $conn->real_escape_string($_GET['update_row']);
     $tanggal = $conn->real_escape_string($_GET['tgl']);
-
-    // Di-JOIN ke tabel barang biar bisa ngirim data 'nama_barang' dan 'satuan' ke form HTML
     $stmt = $conn->prepare("
         SELECT 
             bk.id_barang,

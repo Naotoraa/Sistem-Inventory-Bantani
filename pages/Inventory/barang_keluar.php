@@ -100,7 +100,6 @@ if ($queryBarang) {
                 </thead>
                 <tbody id="tabel-data">
                     <?php
-                    // 1. Siapkan palet warna aesthetic
                     $palet_warna = [
                         ['bg' => '#fce8e8', 'text' => '#a72828'], // Merah muda
                         ['bg' => '#e3f2fd', 'text' => '#1565c0'], // Biru pastel
@@ -170,7 +169,6 @@ if ($queryBarang) {
                     if ($result->num_rows > 0) {
                         $no = 1;
                         foreach ($result as $row):
-                            // 2. Tentukan warna berdasarkan nama barang
                             $index_warna = abs(crc32($row['nama_barang'])) % count($palet_warna);
                             $warna_terpilih = $palet_warna[$index_warna];
                     ?>
@@ -330,21 +328,16 @@ if ($queryBarang) {
         </p>
     <?php endif; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <?php if (isset($_GET['error']) && $_GET['error'] === 'overstock'): ?>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops! Stok Kurang',
-                    text: 'QTY keluar tidak boleh melebihi stok yang ada. Sisa stok saat ini cuma <?= htmlspecialchars($_GET['stok']) ?>.',
-                    confirmButtonColor: '#facc15', // Warna tombol jadi kuning estetik
-                    confirmButtonText: 'Oke, Paham'
-                }).then(() => {
-                    // Jurus menghapus ?error=overstock dari URL tanpa me-refresh halaman
-                    window.history.replaceState(null, null, window.location.pathname);
-                });
+            Swal.fire({
+                icon: 'error',
+                title: 'Qty Melebihi Stok!',
+                text: 'Qty keluar tidak boleh melebihi stok. Stok saat ini = <?= htmlspecialchars($_GET['stok']) ?>',
+            }).then(() => {
+                history.back();
             });
         </script>
     <?php endif; ?>
@@ -399,7 +392,6 @@ if ($queryBarang) {
 
         });
     </script>
-
 
     <script src="../../assets/js/Button/button.js"></script>
     <script src="../../assets/js/Button/button_cancel.js"></script>
