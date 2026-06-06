@@ -77,134 +77,179 @@ if (!empty($conditions)) {
 }
 
 $sql = "
-    SELECT bk.id, bk.id_barang, b.nama_barang, bk.kategori, bk.qty, b.satuan, bk.tanggal_keluar
+    SELECT 
+        bk.id_barang,
+        b.nama_barang,
+        bk.kategori,
+        SUM(bk.qty) as total_qty,
+        b.satuan,
+        bk.tanggal_keluar
     FROM barang_keluar bk
     JOIN barang b ON bk.id_barang = b.id_barang
     $whereClause
-    ORDER BY bk.id DESC
+    GROUP BY bk.id_barang, bk.tanggal_keluar
+    ORDER BY bk.tanggal_keluar DESC
 ";
 $result = $conn->query($sql);
-
-
-//Save Action
+// ========== SAVE ACTION ==========
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
-    include '../../config/conn.php'; // pastikan koneksi ada
 
+    // 🔍 FUNCTION HITUNG STOK (cukup 1x, ga usah diulang)
+    function getStokSaatIni($conn, $id_barang)
+    {
+        $masuk = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_masuk WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+        $keluar = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_keluar WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+        $migrasi = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_migrasi WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+        $eror = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_eror WHERE id_barang = '$id_barang'"))['total'] ?? 0;
+
+        return $masuk - $keluar + $migrasi - $eror;
+    }
+
+    // ✏️ UPDATE (EDIT DATA)
     if ($_POST['action'] == 'update') {
-        $id = $conn->real_escape_string($_POST['id'] ?? '');
+
+        $id_barang_old = $conn->real_escape_string($_POST['id_barang_old'] ?? '');
+        $tanggal_old = $conn->real_escape_string($_POST['tanggal_old'] ?? '');
+
         $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
-        $nama_barang = $conn->real_escape_string($_POST['name'] ?? '');
         $kategori = $conn->real_escape_string($_POST['category'] ?? '');
-
         $qty = (int) ($_POST['qty'] ?? 0);
+        $tanggal_keluar = $conn->real_escape_string($_POST['date'] ?? '');
 
-        function getStokSaatIni($conn, $id_barang)
-        {
-            $masuk = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_masuk WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $keluar = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_keluar WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $migrasi = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_migrasi WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $eror = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_eror WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-
-            return $masuk - $keluar + $migrasi - $eror;
-        }
-
-        $stok_sekarang = getStokSaatIni($conn, $id_barang);
-
-        if ($qty > $stok_sekarang) {
-            header("Location: barang_keluar.php?error=overstock&stok=$stok_sekarang");
+        // Cek darurat biar data aman
+        if (empty($id_barang) || empty($tanggal_keluar) || $qty <= 0) {
+            echo "<script>alert('Gagal: Data tidak boleh kosong dan QTY harus lebih dari 0!'); window.history.back();</script>";
             exit;
         }
 
-        $satuan = $conn->real_escape_string($_POST['satuan'] ?? '');
-        $tanggal_keluar = $conn->real_escape_string($_POST['date'] ?? '');
+        $stok = getStokSaatIni($conn, $id_barang);
 
-        $sql = "UPDATE barang_keluar 
-        SET id_barang = ?, kategori = ?, qty = ?, tanggal_keluar = ? 
-        WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        if ($qty > $stok) {
 
-        if ($stmt) {
-            $stmt->bind_param("ssisi", $id_barang, $kategori, $qty, $tanggal_keluar, $id);
-            if ($stmt->execute()) {
-                echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=updated';</script>";
-            } else {
-                echo "<script>alert('Gagal Update: " . addslashes($stmt->error) . "');</script>";
-            }
-            $stmt->close();
-        }
-    } elseif ($_POST['action'] == 'insert') {
-        $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
-        $nama_barang = $conn->real_escape_string($_POST['name'] ?? '');
-        $kategori = $conn->real_escape_string($_POST['category'] ?? '');
-        $qty = (int) ($_POST['qty'] ?? 0);
-
-        function getStokSaatIni($conn, $id_barang)
-        {
-            $masuk = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_masuk WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $keluar = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_keluar WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $migrasi = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_migrasi WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-            $eror = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(qty) AS total FROM barang_eror WHERE id_barang = '$id_barang'"))['total'] ?? 0;
-
-            return $masuk - $keluar + $migrasi - $eror;
-        }
-
-        $stok_sekarang = getStokSaatIni($conn, $id_barang);
-
-        if ($qty > $stok_sekarang) {
-            header("Location: barang_keluar.php?error=overstock&stok=$stok_sekarang");
+            header("Location: barang_keluar.php?error=overstock&stok=$stok");
             exit;
         }
+        $del = $conn->prepare("
+            DELETE FROM barang_keluar 
+            WHERE id_barang = ? AND tanggal_keluar = ?
+        ");
+        $del->bind_param("ss", $id_barang_old, $tanggal_old);
+        $del->execute();
+        $del->close();
 
-        $satuan = $conn->real_escape_string($_POST['satuan'] ?? '');
-        $tanggal_keluar = $conn->real_escape_string($_POST['date'] ?? '');
+        // ✨ INSERT ULANG (HASIL EDIT)
+        $insert = $conn->prepare("
+            INSERT INTO barang_keluar (id_barang, kategori, qty, tanggal_keluar)
+            VALUES (?, ?, ?, ?)
+        ");
+        $insert->bind_param("ssis", $id_barang, $kategori, $qty, $tanggal_keluar);
 
-        $sql = "INSERT INTO barang_keluar (id_barang, kategori, qty, tanggal_keluar) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-
-        if ($stmt) {
-            $stmt->bind_param("ssis", $id_barang, $kategori, $qty, $tanggal_keluar);
-
-            if ($stmt->execute()) {
-                echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=inserted';</script>";
-            } else {
-                echo "<script>alert('Gagal menyimpan data: " . addslashes($stmt->error) . "'); window.history.back();</script>";
-            }
-            $stmt->close();
+        if ($insert->execute()) {
+            echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=updated';</script>";
         } else {
-            echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=error';</script>";
+            echo "<script>alert('Gagal Update: " . addslashes($insert->error) . "'); window.history.back();</script>";
+        }
+        $insert->close();
+        exit;
+    }
+
+    // ➕ INSERT (TAMBAH DATA)
+    elseif ($_POST['action'] == 'insert') {
+
+        $id_barang = $conn->real_escape_string($_POST['id_barang'] ?? '');
+        $kategori = $conn->real_escape_string($_POST['category'] ?? '');
+        $qty = (int) ($_POST['qty'] ?? 0);
+        $tanggal_keluar = $conn->real_escape_string($_POST['date'] ?? '');
+
+        // Cek darurat biar data aman
+        if (empty($id_barang) || empty($tanggal_keluar) || $qty <= 0) {
+            echo "<script>alert('Gagal: Data tidak boleh kosong dan QTY harus lebih dari 0!'); window.history.back();</script>";
+            exit;
         }
 
-        $conn->close();
+        $stok = getStokSaatIni($conn, $id_barang);
+
+        if ($qty > $stok) {
+            echo "<script>alert('Gagal: Stok tidak mencukupi! Stok saat ini: $stok'); window.history.back();</script>";
+            exit;
+        }
+
+        $stmt = $conn->prepare("
+            INSERT INTO barang_keluar (id_barang, kategori, qty, tanggal_keluar)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmt->bind_param("ssis", $id_barang, $kategori, $qty, $tanggal_keluar);
+
+        if ($stmt->execute()) {
+            echo "<script>window.location.href='../../pages/Inventory/barang_keluar.php?status=inserted';</script>";
+        } else {
+            echo "<script>alert('Gagal simpan: " . addslashes($stmt->error) . "'); window.history.back();</script>";
+        }
+        $stmt->close();
+        exit;
     }
 }
 
-//Delete Action
-if (isset($_GET['hapus_data'])) {
-    $id = $_GET['hapus_data'];
+// ========== DELETE ACTION (versi grouping) ==========
+if (isset($_GET['hapus_data']) && isset($_GET['tgl'])) {
 
-    $sql = "DELETE FROM barang_keluar WHERE id = ?";
+    $id_barang = $conn->real_escape_string($_GET['hapus_data']);
+    $tanggal = $conn->real_escape_string($_GET['tgl']);
+
+    $sql = "DELETE FROM barang_keluar WHERE id_barang = ? AND tanggal_keluar = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
+
+    if (!$stmt) {
+        die("Prepare gagal: " . $conn->error);
+    }
+
+    $stmt->bind_param("ss", $id_barang, $tanggal);
 
     if ($stmt->execute()) {
         echo "<script>window.location.href='barang_keluar.php?status=deleted';</script>";
     } else {
         echo "<script>window.location.href='barang_keluar.php?status=error';</script>";
     }
-
-    $conn->close();
+    $stmt->close();
+    exit();
 }
 
-//Update Action
-if (isset($_GET['update_row'])) {
-    $id = $_GET['update_row'];
+// ========== GET DATA UNTUK UPDATE (versi grouping) ==========
+$data_update = null;
+if (isset($_GET['update_row']) && isset($_GET['tgl'])) {
 
-    $data_update = $conn->query("SELECT * FROM barang_keluar WHERE id = '$id' LIMIT 1");
+    $id_barang = $conn->real_escape_string($_GET['update_row']);
+    $tanggal = $conn->real_escape_string($_GET['tgl']);
 
-    if ($data_update->num_rows < 1) {
-        echo "<script>alert('Data sudah dihapus atau tidak ada'); location.href='../../pages/Inventory/barang_keluar.php'</script>";
+    // Di-JOIN ke tabel barang biar bisa ngirim data 'nama_barang' dan 'satuan' ke form HTML
+    $stmt = $conn->prepare("
+        SELECT 
+            bk.id_barang,
+            b.nama_barang,
+            bk.kategori,
+            b.satuan,
+            SUM(bk.qty) as qty,
+            bk.tanggal_keluar
+        FROM barang_keluar bk
+        JOIN barang b ON bk.id_barang = b.id_barang
+        WHERE bk.id_barang = ? AND bk.tanggal_keluar = ?
+        GROUP BY bk.id_barang, b.nama_barang, bk.kategori, b.satuan, bk.tanggal_keluar
+        LIMIT 1
+    ");
+
+    if (!$stmt) {
+        die("Prepare gagal: " . $conn->error);
+    }
+
+    $stmt->bind_param("ss", $id_barang, $tanggal);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows < 1) {
+        echo "<script>alert('Data tidak ditemukan'); location.href='barang_keluar.php'</script>";
         exit();
     }
 
-    $data_update = $data_update->fetch_assoc();
+    $data_update = $result->fetch_assoc();
+    $stmt->close();
 }

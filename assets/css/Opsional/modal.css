@@ -98,3 +98,113 @@
   border-color: #218838 !important;
   box-shadow: 0 0 8px rgba(40, 167, 69, 0.6) !important;
 }
+/* =========================================
+   OVERRIDE KHUSUS UNTUK DARK MODE
+   Semua styling di bawah hanya aktif jika
+   ada class .dark-mode aktif di web-nya
+========================================= */
+
+.dark-mode .modal-content {
+  border-color: #3d3d3d;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  background: #1e1e1e;
+}
+
+.dark-mode .modal-header {
+  background: #10b981; /* Hijau modern */
+}
+
+.dark-mode .modal-body {
+  color: #e0e0e0;
+}
+
+/* Modifikasi input box */
+.dark-mode .input-dark {
+  background-color: #2b2b2b;
+  border: 1px solid #3d3d3d;
+}
+
+.dark-mode .form-floating input {
+  color: #ffffff !important;
+}
+
+.dark-mode .form-floating label {
+  color: #a3a3a3;
+}
+
+/* Form control dasar */
+.dark-mode .form-control {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #444 !important;
+}
+
+.dark-mode .form-control::placeholder {
+  color: #6b7280 !important;
+}
+
+.dark-mode .form-control:focus {
+  border-color: #4ade80 !important;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.2) !important;
+}
+
+/* Modifikasi Wrapper Stok */
+.dark-mode .stok-wrapper {
+  background-color: #212529;
+  border-color: #3d3d3d !important;
+}
+
+.dark-mode .title-stok {
+  color: #ffffff;
+}
+
+.dark-mode .stok-dark {
+  background-color: #2b2b2b;
+}
+
+.dark-mode .lbl-stok {
+  color: #a3a3a3;
+}
+
+.dark-mode .val-stok {
+  color: #ffffff;
+}
+
+/* Modifikasi Zona Bahaya */
+.dark-mode .danger-dark {
+  background-color: rgba(225, 29, 72, 0.05);
+  border: 1px dashed #e11d48;
+}
+
+.dark-mode .desc-danger {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Jika masih ada tag p bawaan di modal body */
+.dark-mode .modal-body p {
+  background: #2b2b2b;
+  border-color: #3d3d3d;
+}
+
+.dark-mode .modal-body p:hover {
+  background: #333333;
+}
+
+.dark-mode .link-nama {
+  color: #4ade80;
+}
+
+.dark-mode .link-nama:hover {
+  color: #22c55e;
+}
+/* Menghilangkan blok putih bawaan form-floating Bootstrap */
+.dark-mode .form-floating > label::after {
+  background-color: transparent !important;
+}
+
+/* Mengubah badge/elemen putih di header agar lebih elegan (Glassmorphism effect) */
+.dark-mode .modal-header .bg-white {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}

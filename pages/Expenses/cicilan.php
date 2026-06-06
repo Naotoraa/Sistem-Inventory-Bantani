@@ -14,6 +14,7 @@ require '../../config/clear_cache.php';
     <link rel="icon" href="../../assets/img/Bantani 1.png" type="image/x-icon">
 
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/dark_mode.css">
     <link rel="stylesheet" href="../../assets/css/Menu/expenses.css">
     <link rel="stylesheet" href="../../assets/css/Partials/navbar.css">
     <link rel="stylesheet" href="../../assets/css/Partials/sidebar.css">
@@ -25,6 +26,9 @@ require '../../config/clear_cache.php';
 </head>
 
 <body class="flex flex-col min-h-screen">
+
+    <script src="../../assets/js/init_theme.js"></script>
+
     <div id="navbar-container">
         <?php include __DIR__ . '/../../partials/navbar.php'; ?>
     </div>
@@ -253,6 +257,8 @@ require '../../config/clear_cache.php';
     <script src="../../assets/js/Button/button_save.js"></script>
     <script src="../../assets/js/Opsional/pagination.js"></script>
     <script src="../../assets/js/Eksport//eksport_cicilan.js"></script>
+    <script src="../../assets/js/global_theme.js"></script>
+    <script src="../../assets/js/Setting/change_theme.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

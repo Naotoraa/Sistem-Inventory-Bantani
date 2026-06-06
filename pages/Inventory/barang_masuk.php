@@ -1,7 +1,27 @@
 <?php require_once '../../settings.php'; ?>
+
 <?php
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 include '../../config/logic/logic_masuk.php';
+$barangList = [];
+$satuanSet = [];
+$satuanList = [];
+$queryBarang = $conn->query("SELECT * FROM barang ORDER BY nama_barang ASC");
+
+if ($queryBarang) {
+    while ($row = $queryBarang->fetch_assoc()) {
+        $barangList[] = $row;
+        $satuan = trim($row['satuan']);
+        if ($satuan !== '' && !isset($satuanSet[$satuan])) {
+            $satuanSet[$satuan] = true;
+            $satuanList[] = $satuan;
+        }
+    }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +33,7 @@ include '../../config/logic/logic_masuk.php';
     <link rel="icon" href="../../assets/img/Bantani 1.png" type="image/x-icon">
 
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/dark_mode.css">
     <link rel="stylesheet" href="../../assets/css/Menu/manajemen_barang.css">
     <link rel="stylesheet" href="../../assets/css/Partials/navbar.css">
     <link rel="stylesheet" href="../../assets/css/Partials/sidebar.css">
@@ -25,6 +46,9 @@ include '../../config/logic/logic_masuk.php';
 </head>
 
 <bscri class="flex flex-col min-h-screen">
+
+    <script src="../../assets/js/init_theme.js"></script>
+
     <div id="navbar-container">
         <?php include __DIR__ . '/../../partials/navbar.php'; ?>
     </div>
@@ -67,60 +91,77 @@ include '../../config/logic/logic_masuk.php';
                 </thead>
                 <tbody id="tabel-data">
                     <?php
-                    $cari = $_GET['cari'] ?? '';
-                    $bulan = $_GET['bulan'] ?? '';
-                    $conditions = [];
+    // 1. Siapkan palet warna aesthetic
+    $palet_warna = [
+        ['bg' => '#fce8e8', 'text' => '#a72828'], // Merah muda
+        ['bg' => '#e3f2fd', 'text' => '#1565c0'], // Biru pastel
+        ['bg' => '#e8f5e9', 'text' => '#2e7d32'], // Hijau mint
+        ['bg' => '#fff3e0', 'text' => '#ef6c00'], // Oranye soft
+        ['bg' => '#f3e5f5', 'text' => '#6a1b9a'], // Ungu lilac
+        ['bg' => '#fef9e7', 'text' => '#b9770e'], // Kuning aesthetic
+        ['bg' => '#e0f7fa', 'text' => '#00838f']  // Cyan laut
+    ];
 
-                    if (!empty($cari)) {
-                        $cari = $conn->real_escape_string($cari);
-                        $conditions[] = "(bm.id_barang LIKE '%$cari%' 
+    $cari = $_GET['cari'] ?? '';
+    $bulan = $_GET['bulan'] ?? '';
+    $conditions = [];
+
+    if (!empty($cari)) {
+        $cari = $conn->real_escape_string($cari);
+        $conditions[] = "(bm.id_barang LIKE '%$cari%' 
                      OR b.nama_barang LIKE '%$cari%' 
                      OR b.kategori LIKE '%$cari%')";
-                    }
+    }
 
-                    if (!empty($bulan)) {
-                        $conditions[] = "DATE_FORMAT(bm.tanggal_masuk, '%Y-%m') = '$bulan'";
-                    }
+    if (!empty($bulan)) {
+        $conditions[] = "DATE_FORMAT(bm.tanggal_masuk, '%Y-%m') = '$bulan'";
+    }
 
-                    $whereClause = '';
-                    if (!empty($conditions)) {
-                        $whereClause = 'WHERE ' . implode(' AND ', $conditions);
-                    }
+    $whereClause = '';
+    if (!empty($conditions)) {
+        $whereClause = 'WHERE ' . implode(' AND ', $conditions);
+    }
 
-                    $sql = "
-                    SELECT bm.id, bm.id_barang, b.nama_barang, bm.kategori, bm.qty, b.satuan, bm.tanggal_masuk
-                    FROM barang_masuk bm JOIN barang b ON bm.id_barang = b.id_barang $whereClause ORDER BY bm.id DESC
-                    ";
+    $sql = "SELECT bm.id, bm.id_barang, b.nama_barang, bm.kategori, bm.qty, b.satuan, bm.tanggal_masuk
+            FROM barang_masuk bm JOIN barang b ON bm.id_barang = b.id_barang $whereClause ORDER BY bm.id DESC";
 
-                    $result = $conn->query($sql);
+    $result = $conn->query($sql);
 
-                    if ($result->num_rows > 0) {
-                        $no = 1;
-                        foreach ($result as $no => $row): ?>
-                            <tr>
-                                <td><?= $no + 1; ?></td>
-                                <td><?= htmlspecialchars($row['id_barang']) ?></td>
-                                <td><?= htmlspecialchars($row['nama_barang']) ?></td>
-                                <td><?= htmlspecialchars($row['kategori']) ?></td>
-                                <td><?= htmlspecialchars($row['qty']) ?></td>
-                                <td><?= htmlspecialchars($row['satuan']) ?></td>
-                                <td><?= htmlspecialchars($row['tanggal_masuk']) ?></td>
-                                <td>
-                                    <button type="button" data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-
-                                    <button type="button" data-link="?update_row=<?= $row['id'] ?>#form_edit_insert"
-                                        class="edit-btn">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
+    if ($result && $result->num_rows > 0) {
+        $no = 1;
+        foreach ($result as $row): 
+            // 2. Tentukan warna konsisten berdasarkan nama barang
+            $index_warna = abs(crc32($row['nama_barang'])) % count($palet_warna);
+            $warna_terpilih = $palet_warna[$index_warna];
+    ?>
+                    <tr>
+                        <td><?= $no++; ?></td>
+                        <td><?= htmlspecialchars($row['id_barang']) ?></td>
+                        <td>
+                            <span class="badge-dinamis"
+                                style="background-color: <?= $warna_terpilih['bg'] ?>; color: <?= $warna_terpilih['text'] ?>;">
+                                <?= htmlspecialchars($row['nama_barang']) ?>
+                            </span>
+                        </td>
+                        <td><?= htmlspecialchars($row['kategori']) ?></td>
+                        <td><?= htmlspecialchars($row['qty']) ?></td>
+                        <td><?= htmlspecialchars($row['satuan']) ?></td>
+                        <td><?= htmlspecialchars($row['tanggal_masuk']) ?></td>
+                        <td>
+                            <button type="button" data-link="?hapus_data=<?= $row['id'] ?>" class="delete-btn">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <button type="button" data-link="?update_row=<?= $row['id'] ?>#form_edit_insert"
+                                class="edit-btn">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
                     <?php endforeach;
-                    } else {
-                        echo "<tr><td colspan='8'>Tidak ada data.</td></tr>";
-                    }
-                    ?>
+    } else {
+        echo "<tr><td colspan='8'>Tidak ada data.</td></tr>";
+    }
+    ?>
                 </tbody>
             </table>
             <div class="table-bottom-container">
@@ -143,14 +184,18 @@ include '../../config/logic/logic_masuk.php';
                 <div class="form-group-card">
                     <label for="id_barang">ID Barang</label>
                     <i class="fas fa-barcode"></i>
-                    <select name="id_barang" id="id_barang" required
+                    <select name="id_barang" id="id_barang" class="form-select" required
                         <?= isset($data_update) ? 'data-current-id="' . $data_update['id_barang'] . '"' : '' ?>>
-                        <option value="">-- Pilih ID Barang --</option>
+                        <option value="" disabled <?= !isset($data_update) ? 'selected' : '' ?>>-- Pilih ID Barang --
+                        </option>
                         <?php foreach ($barangList as $barang): ?>
-                            <option value="<?= $barang['id_barang'] ?>" data-name="<?= $barang['nama_barang'] ?>"
-                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                                <?= $barang['id_barang'] ?>
-                            </option>
+                        <option value="<?= $barang['id_barang'] ?>"
+                            <?= (isset($data_update) && $data_update['id_barang'] == $barang['id_barang']) ? 'selected' : '' ?>
+                            data-nama="<?= htmlspecialchars($barang['nama_barang'] ?? '') ?>"
+                            data-category="<?= htmlspecialchars($barang['kategori'] ?? '') ?>"
+                            data-satuan="<?= htmlspecialchars($barang['satuan'] ?? '') ?>">
+                            <?= htmlspecialchars($barang['id_barang']) ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -160,12 +205,15 @@ include '../../config/logic/logic_masuk.php';
                     <i class="fas fa-box"></i>
                     <select name="name" id="name" required
                         <?= isset($data_update) ? 'data-current-name="' . $data_update['nama_barang'] . '"' : '' ?>>
-                        <option value="">-- Pilih Nama Barang --</option>
+                        <option value="" disabled <?= !isset($data_update) ? 'selected' : '' ?>>-- Pilih Nama Barang --
+                        </option>
                         <?php foreach ($barangList as $barang): ?>
-                            <option value="<?= $barang['nama_barang'] ?>" data-id="<?= $barang['id_barang'] ?>"
-                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                                <?= $barang['nama_barang'] ?>
-                            </option>
+                        <option value="<?= $barang['nama_barang'] ?>"
+                            <?= (isset($data_update) && $data_update['nama_barang'] == $barang['nama_barang']) ? 'selected' : '' ?>
+                            data-id="<?= $barang['id_barang'] ?>" data-category="<?= $barang['kategori'] ?>"
+                            data-satuan="<?= $barang['satuan'] ?>">
+                            <?= $barang['nama_barang'] ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -173,8 +221,11 @@ include '../../config/logic/logic_masuk.php';
                 <div class="form-group-card">
                     <label for="category">Kategori</label>
                     <i class="fas fa-tag"></i>
-                    <input type="text" name="category" id="category" readonly>
+                    <input type="text" name="category" id="category"
+                        value="<?= isset($data_update) ? htmlspecialchars($data_update['kategori']) : ''; ?>"
+                        placeholder="Otomatis terisi..." readonly>
                 </div>
+
 
                 <div class="form-group-card">
                     <label for="qty">QTY</label>
@@ -186,8 +237,9 @@ include '../../config/logic/logic_masuk.php';
                 <div class="form-group-card">
                     <label for="satuan">Satuan</label>
                     <i class="fas fa-weight-hanging"></i>
-                    <input type="text" name="satuan" id="satuan" readonly
-                        value="<?= isset($data_update['satuan']) ? ucfirst($data_update['satuan']) : '' ?>">
+                    <input type="text" name="satuan" id="satuan"
+                        value="<?= isset($data_update['satuan']) ? ucfirst(htmlspecialchars($data_update['satuan'])) : ''; ?>"
+                        placeholder="Otomatis terisi..." readonly>
                 </div>
 
                 <div class="form-group-card" id="tanggal_masuk" onclick="document.getElementById('date').showPicker()">
@@ -201,7 +253,6 @@ include '../../config/logic/logic_masuk.php';
                     <button type="button" class="cancel-btn" data-redirect="barang_masuk.php">
                         <i class="fas fa-times"></i> Cancel
                     </button>
-
                     <button type="submit" class="save-btn">
                         <i class="fas fa-save"></i> Save
                     </button>
@@ -225,6 +276,8 @@ include '../../config/logic/logic_masuk.php';
     <script src="../../assets/js/Opsional/tom_select.js"></script>
     <script src="../../assets/js/Generate/generate_Item.js"></script>
     <script src="../../assets/js/Eksport/eksport_masuk.js"></script>
+    <script src="../../assets/js/global_theme.js"></script>
+    <script src="../../assets/js/Setting/change_theme.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>

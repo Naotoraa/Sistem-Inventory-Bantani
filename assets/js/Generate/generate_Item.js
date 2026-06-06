@@ -13,9 +13,11 @@ document.addEventListener("DOMContentLoaded", function () {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  // === LISTENER UNTUK ID BARANG ===
   idSelectEl.addEventListener("change", function () {
     const selected = idSelectEl.options[idSelectEl.selectedIndex];
-    const name = selected.getAttribute("data-name");
+    // PERBAIKAN UTAMA: Ganti data-name jadi data-nama (sesuai HTML)
+    const name = selected.getAttribute("data-nama");
     const category = selected.getAttribute("data-category");
     const satuan = selected.getAttribute("data-satuan");
 
@@ -24,6 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (satuan) satuanInput.value = capitalize(satuan);
   });
 
+  // === LISTENER UNTUK NAMA BARANG ===
   nameSelectEl.addEventListener("change", function () {
     const selected = nameSelectEl.options[nameSelectEl.selectedIndex];
     const id = selected.getAttribute("data-id");
@@ -35,13 +38,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (satuan) satuanInput.value = capitalize(satuan);
   });
 
+  // === AUTO-FILL SAAT HALAMAN UPDATE DIBUKA ===
   const currentId = idSelectEl.getAttribute("data-current-id");
   const currentName = nameSelectEl.getAttribute("data-current-name");
   const currentSatuan = satuanInput.getAttribute("value");
 
+  // Tom Select butuh perlakuan khusus pakai .setValue()
   if (currentId) idSelect.setValue(currentId, true);
   if (currentName) nameSelect.setValue(currentName, true);
   if (currentSatuan) satuanInput.value = capitalize(currentSatuan);
 
+  // Pancing event 'change' biar Kategori & Satuan juga otomatis keisi
   if (currentId) idSelectEl.dispatchEvent(new Event("change"));
 });

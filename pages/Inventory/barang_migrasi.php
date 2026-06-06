@@ -1,7 +1,20 @@
 <?php require_once '../../settings.php'; ?>
+
 <?php
-include '../../config/logic/logic_migrasi.php'
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+include '../../config/logic/logic_migrasi.php';
+$barangList = [];
+$queryBarang = mysqli_query($conn, "SELECT * FROM barang ORDER BY nama_barang ASC");
+
+if ($queryBarang) {
+    while ($row = mysqli_fetch_assoc($queryBarang)) {
+        $barangList[] = $row;
+    }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +26,7 @@ include '../../config/logic/logic_migrasi.php'
     <link rel="icon" href="../../assets/img/Bantani 1.png" type="image/x-icon">
 
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/dark_mode.css">
     <link rel="stylesheet" href="../../assets/css/Menu/manajemen_barang.css">
     <link rel="stylesheet" href="../../assets/css/Partials/navbar.css">
     <link rel="stylesheet" href="../../assets/css/Partials/sidebar.css">
@@ -25,6 +39,9 @@ include '../../config/logic/logic_migrasi.php'
 </head>
 
 <body class="flex flex-col min-h-screen">
+
+    <script src="../../assets/js/init_theme.js"></script>
+
     <div id="navbar-container">
         <?php include __DIR__ . '/../../partials/navbar.php'; ?>
     </div>
@@ -68,9 +85,21 @@ include '../../config/logic/logic_migrasi.php'
                 </thead>
                 <tbody id="tabel-data">
                     <?php
+                    // 1. Siapkan palet warna aesthetic
+                    $palet_warna = [
+                        ['bg' => '#fce8e8', 'text' => '#a72828'], // Merah muda
+                        ['bg' => '#e3f2fd', 'text' => '#1565c0'], // Biru pastel
+                        ['bg' => '#e8f5e9', 'text' => '#2e7d32'], // Hijau mint
+                        ['bg' => '#fff3e0', 'text' => '#ef6c00'], // Oranye soft
+                        ['bg' => '#f3e5f5', 'text' => '#6a1b9a'], // Ungu lilac
+                        ['bg' => '#fef9e7', 'text' => '#b9770e'], // Kuning aesthetic
+                        ['bg' => '#e0f7fa', 'text' => '#00838f']  // Cyan laut
+                    ];
+
                     $cari = $_GET['cari'] ?? '';
                     $bulan = $_GET['bulan'] ?? '';
                     $conditions = [];
+
                     if (!empty($cari)) {
                         $cari = $conn->real_escape_string($cari);
                         $conditions[] = "(mg.id_barang LIKE '%$cari%' 
@@ -86,18 +115,26 @@ include '../../config/logic/logic_migrasi.php'
                     if (!empty($conditions)) {
                         $whereClause = 'WHERE ' . implode(' AND ', $conditions);
                     }
-                    $sql = "
-                    SELECT mg.id, mg.id_barang, b.nama_barang, mg.kategori, mg.qty, b.satuan, mg.keterangan, mg.tanggal
-                    FROM barang_migrasi mg JOIN barang b ON mg.id_barang = b.id_barang $whereClause ORDER BY mg.id DESC";
+                    $sql = "SELECT mg.id, mg.id_barang, b.nama_barang, mg.kategori, mg.qty, b.satuan, mg.keterangan, mg.tanggal
+            FROM barang_migrasi mg JOIN barang b ON mg.id_barang = b.id_barang $whereClause ORDER BY mg.id DESC";
                     $result = $conn->query($sql);
 
-                    if ($result->num_rows > 0) {
+                    if ($result && $result->num_rows > 0) {
                         $no = 1;
-                        foreach ($result as $no => $row): ?>
+                        foreach ($result as $row):
+                            // 2. Tentukan warna berdasarkan nama barang agar konsisten
+                            $index_warna = abs(crc32($row['nama_barang'])) % count($palet_warna);
+                            $warna_terpilih = $palet_warna[$index_warna];
+                    ?>
                             <tr>
-                                <td><?= $no + 1; ?></td>
+                                <td><?= $no++; ?></td>
                                 <td><?= htmlspecialchars($row['id_barang']) ?></td>
-                                <td><?= htmlspecialchars($row['nama_barang']) ?></td>
+                                <td>
+                                    <span class="badge-dinamis"
+                                        style="background-color: <?= $warna_terpilih['bg'] ?>; color: <?= $warna_terpilih['text'] ?>;">
+                                        <?= htmlspecialchars($row['nama_barang']) ?>
+                                    </span>
+                                </td>
                                 <td><?= htmlspecialchars($row['kategori']) ?></td>
                                 <td><?= htmlspecialchars($row['qty']) ?></td>
                                 <td><?= htmlspecialchars($row['satuan']) ?></td>
@@ -114,7 +151,7 @@ include '../../config/logic/logic_migrasi.php'
                             </tr>
                     <?php endforeach;
                     } else {
-                        echo "<tr><td colspan='8'>Tidak ada data.</td></tr>";
+                        echo "<tr><td colspan='9'>Tidak ada data.</td></tr>";
                     }
                     ?>
                 </tbody>
@@ -135,16 +172,20 @@ include '../../config/logic/logic_migrasi.php'
             <form action="barang_migrasi.php" method="POST">
                 <input type="hidden" name="action" value="<?= isset($data_update) ? 'update' : 'insert' ?>">
                 <input type="hidden" name="id" value="<?= isset($data_update) ? $data_update['id'] : '0' ?>">
+
                 <div class="form-group-card">
                     <label for="id_barang">ID Barang</label>
                     <i class="fas fa-barcode"></i>
-                    <select name="id_barang" id="id_barang" required
-                        <?= isset($data_update) ? 'data-current-id="' . $data_update['id_barang'] . '"' : '' ?>>
-                        <option value="">-- Pilih ID Barang --</option>
+                    <select name="id_barang" id="id_barang" class="form-select" required
+                        <?= isset($data_update) ? 'data-current-id="' . htmlspecialchars(trim($data_update['id_barang'])) . '"' : '' ?>>
+                        <option value="" disabled <?= !isset($data_update) ? 'selected' : '' ?>>-- Pilih ID Barang --
+                        </option>
                         <?php foreach ($barangList as $barang): ?>
-                            <option value="<?= $barang['id_barang'] ?>" data-name="<?= $barang['nama_barang'] ?>"
-                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                                <?= $barang['id_barang'] ?>
+                            <option value="<?= htmlspecialchars(trim($barang['id_barang'])) ?>"
+                                data-nama="<?= htmlspecialchars(trim($barang['nama_barang'] ?? '')) ?>"
+                                data-category="<?= htmlspecialchars(trim($barang['kategori'] ?? '')) ?>"
+                                data-satuan="<?= htmlspecialchars(trim($barang['satuan'] ?? '')) ?>">
+                                <?= htmlspecialchars(trim($barang['id_barang'])) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -153,13 +194,16 @@ include '../../config/logic/logic_migrasi.php'
                 <div class="form-group-card">
                     <label for="name">Nama Barang</label>
                     <i class="fas fa-box"></i>
-                    <select name="name" id="name" required
-                        <?= isset($data_update) ? 'data-current-name="' . $data_update['nama_barang'] . '"' : '' ?>>
-                        <option value="">-- Pilih Nama Barang --</option>
+                    <select name="name" id="name" class="form-select" required
+                        <?= isset($data_update) ? 'data-current-name="' . htmlspecialchars(trim($data_update['nama_barang'])) . '"' : '' ?>>
+                        <option value="" disabled <?= !isset($data_update) ? 'selected' : '' ?>>-- Pilih Nama Barang --
+                        </option>
                         <?php foreach ($barangList as $barang): ?>
-                            <option value="<?= $barang['nama_barang'] ?>" data-id="<?= $barang['id_barang'] ?>"
-                                data-category="<?= $barang['kategori'] ?>" data-satuan="<?= $barang['satuan'] ?>">
-                                <?= $barang['nama_barang'] ?>
+                            <option value="<?= htmlspecialchars(trim($barang['nama_barang'])) ?>"
+                                data-id="<?= htmlspecialchars(trim($barang['id_barang'])) ?>"
+                                data-category="<?= htmlspecialchars(trim($barang['kategori'] ?? '')) ?>"
+                                data-satuan="<?= htmlspecialchars(trim($barang['satuan'] ?? '')) ?>">
+                                <?= htmlspecialchars(trim($barang['nama_barang'])) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -168,7 +212,9 @@ include '../../config/logic/logic_migrasi.php'
                 <div class="form-group-card">
                     <label for="category">Kategori</label>
                     <i class="fas fa-tag"></i>
-                    <input type="text" name="category" id="category" readonly>
+                    <input type="text" name="category" id="category"
+                        value="<?= isset($data_update) ? htmlspecialchars($data_update['kategori']) : ''; ?>"
+                        placeholder="Otomatis terisi..." readonly>
                 </div>
 
                 <div class="form-group-card">
@@ -181,8 +227,9 @@ include '../../config/logic/logic_migrasi.php'
                 <div class="form-group-card">
                     <label for="satuan">Satuan</label>
                     <i class="fas fa-weight-hanging"></i>
-                    <input type="text" name="satuan" id="satuan" readonly
-                        value="<?= isset($data_update['satuan']) ? ucfirst($data_update['satuan']) : '' ?>">
+                    <input type="text" name="satuan" id="satuan"
+                        value="<?= isset($data_update['satuan']) ? ucfirst(htmlspecialchars($data_update['satuan'])) : ''; ?>"
+                        placeholder="Otomatis terisi..." readonly>
                 </div>
 
                 <div class="form-group-card" id="tanggal_masuk" onclick="document.getElementById('date').showPicker()">
@@ -197,14 +244,13 @@ include '../../config/logic/logic_migrasi.php'
                     <i class="fas fa-info-circle" style="margin-top: -27px;"></i>
                     <textarea name="keterangan" id="keterangan" rows="3" placeholder="Masukkan keterangan tambahan..."
                         style="width: 100%; resize: vertical;"
-                        required><?= isset($data_update) ? $data_update['keterangan'] : '' ?></textarea>
+                        required><?= isset($data_update) ? htmlspecialchars($data_update['keterangan']) : '' ?></textarea>
                 </div>
 
                 <div class="form-actions">
                     <button type="button" class="cancel-btn" data-redirect="barang_migrasi.php">
                         <i class="fas fa-times"></i> Cancel
                     </button>
-
                     <button type="submit" class="save-btn">
                         <i class="fas fa-save"></i> Save
                     </button>
@@ -227,6 +273,8 @@ include '../../config/logic/logic_migrasi.php'
     <script src="../../assets/js/Opsional/tom_select.js"></script>
     <script src="../../assets/js/Generate/generate_Item.js"></script>
     <script src="../../assets/js/Eksport/eksport_migrasi.js"></script>
+    <script src="../../assets/js/global_theme.js"></script>
+    <script src="../../assets/js/Setting/change_theme.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>

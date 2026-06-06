@@ -1,0 +1,145 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+}
+
+.scan-container {
+  max-width: 500px;
+  margin: 10px auto;
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.scan-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* 🔥 SCANNER FULL */
+#scanner {
+  position: relative;
+  width: 100%;
+  height: 65vh; /* responsive */
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid #689f38;
+}
+
+/* 🔥 VIDEO FULL TANPA HITAM */
+#scanner video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* canvas dari quagga */
+#scanner canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* overlay */
+.scan-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* 🎯 kotak scan */
+.scan-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 85%;
+  height: 140px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #00ff88;
+  border-radius: 10px;
+}
+
+/* ✨ sudut scanner */
+.scan-box::before,
+.scan-box::after {
+  content: "";
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border: 3px solid #00ff88;
+}
+
+.scan-box::before {
+  top: -3px;
+  left: -3px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.scan-box::after {
+  bottom: -3px;
+  right: -3px;
+  border-left: none;
+  border-top: none;
+}
+
+/* 🔴 garis scan */
+.scan-line {
+  position: absolute;
+  left: 7.5%;
+  width: 85%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+  animation: scanline 2s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    top: 30%;
+  }
+  50% {
+    top: 70%;
+  }
+  100% {
+    top: 30%;
+  }
+}
+
+#result {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #444;
+}
+
+.btn-back {
+  background: #007bff; /* biru */
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-top: 20px;
+}
+
+.btn-back:hover {
+  background: #0056b3;
+}
+
+.btn-refresh {
+  background: #ffc107; /* kuning */
+  color: black;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-refresh:hover {
+  background: #e0a800;
+}

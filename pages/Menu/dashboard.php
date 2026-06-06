@@ -1,13 +1,18 @@
 <?php require_once '../../settings.php'; ?>
 <?php
+// Semua logika dan query database sekarang ada di file ini
 include '../../config/logic/logic_dashboard.php';
 
-$masuk  = $conn->query("SELECT SUM(qty) AS total FROM barang_masuk")->fetch_assoc()['total'] ?? 0;
-$keluar = $conn->query("SELECT SUM(qty) AS total FROM barang_keluar")->fetch_assoc()['total'] ?? 0;
-$migrasi = $conn->query("SELECT SUM(qty) AS total FROM barang_migrasi")->fetch_assoc()['total'] ?? 0;
-$eror   = $conn->query("SELECT SUM(qty) AS total FROM barang_eror")->fetch_assoc()['total'] ?? 0;
-
-$total_stok = $masuk - $keluar + $migrasi - $eror;
+$log             = $log ?? [];
+$total_stok      = $total_stok ?? 0;
+$qty_masuk       = $qty_masuk ?? 0;
+$qty_keluar      = $qty_keluar ?? 0;
+$qty_migrasi     = $qty_migrasi ?? 0;
+$qty_eror        = $qty_eror ?? 0;
+$exp_operasional = $exp_operasional ?? 0;
+$exp_service     = $exp_service ?? 0;
+$exp_cicilan     = $exp_cicilan ?? 0;
+$exp_utilitas    = $exp_utilitas ?? 0;
 ?>
 
 <!DOCTYPE html>
@@ -20,6 +25,7 @@ $total_stok = $masuk - $keluar + $migrasi - $eror;
     <link rel="icon" href="../../assets/img/Bantani 1.png" type="image/x-icon">
 
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/dark_mode.css">
     <link rel="stylesheet" href="../../assets/css/Menu/dashboard.css">
     <link rel="stylesheet" href="../../assets/css/Partials/navbar.css">
     <link rel="stylesheet" href="../../assets/css/Partials/sidebar.css">
@@ -32,9 +38,13 @@ $total_stok = $masuk - $keluar + $migrasi - $eror;
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display:wght@700&family=Lobster&display=swap"
         rel="stylesheet">
+
 </head>
 
 <body class="flex flex-col min-h-screen">
+
+    <script src="../../assets/js/init_theme.js"></script>
+
     <div id="navbar-container">
         <?php include __DIR__ . '../../../partials/navbar.php'; ?>
     </div>
@@ -47,7 +57,7 @@ $total_stok = $masuk - $keluar + $migrasi - $eror;
     <h4 class="sub-title">Halaman utama di Bantani Inventory</h4>
 
     <section class="content">
-        <div class="card-container">
+        <div class="card-container mb-2">
             <a href="../../pages/Inventory/manage_stok.php" style="text-decoration: none; color: inherit;">
                 <div class="card">
                     <div class="card-header">
@@ -103,54 +113,39 @@ $total_stok = $masuk - $keluar + $migrasi - $eror;
                 </div>
             </a>
         </div>
-    </section>
+        <div class="grafik-container container-fluid p-0 mb-4">
+            <div class="row g-4 m-0">
+                <div class="col-lg-7 pl-0">
+                    <div class="grafik-card">
+                        <h5 class="judul-grafik">PENGELOLAAN BARANG</h5>
+                        <div id="bar-chart"></div>
+                    </div>
+                </div>
 
-    <section class="grafik">
-        <h2 class="judul" id="judul_statistik">Statistik Grafik</h2>
-        <div class="infographic-square">
-            <div class="quadrant top-left">
-                <div>
-                    <div class="label">Barang Masuk</div>
-                    <span><?= number_format($qty_masuk) ?></span>
+                <div class="col-lg-5 pr-0">
+                    <div class="grafik-card" style="display: flex; flex-direction: column;">
+                        <h5 class="judul-grafik">PENGELUARAN[EXPENSES]</h5>
+                        <div id="donut-chart"
+                            style="flex-grow: 1; display: flex; align-items: center; justify-content: center;"></div>
+                    </div>
                 </div>
-            </div>
-            <div class="quadrant top-right">
-                <div>
-                    <div class="label">Barang Keluar</div>
-                    <span><?= number_format($qty_keluar) ?></span>
-                </div>
-            </div>
-            <div class="quadrant bottom-right">
-                <div>
-                    <div class="label">Barang Migrasi</div>
-                    <span><?= number_format($qty_migrasi) ?></span>
-                </div>
-            </div>
-            <div class="quadrant bottom-left">
-                <div>
-                    <div class="label">Barang Error</div>
-                    <span><?= number_format($qty_eror) ?></span>
-                </div>
-            </div>
-
-            <div class="center-circle">
-                <h3>Stok Akhir</h3>
-                <p><?= number_format($total_stok) ?></p>
             </div>
         </div>
-
-
     </section>
 
-    <section class="table_aktifitas">
-        <h2 class="judul">Aktivitas Terkini</h2>
+    <section class="table_aktifitas" style="margin-top: 25px;">
+        <h2 class="judul"
+            style="padding-top: 0; margin-left: 107px; color: #1e293b; font-weight: 700; font-size: 20px;">Aktivitas
+            Terkini</h2>
+
         <table>
             <thead>
                 <tr>
-                    <th style="text-align: center;">No</th>
-                    <th style="text-align: center;">Tanggal & Waktu</th>
-                    <th style="text-align: center;">Nama Aktivitas</th>
-                    <th style="text-align: center;">Deskripsi / Detail</th>
+                    <th style="text-align: center; width: 5%;">No</th>
+                    <th style="text-align: center; width: 20%;">Tanggal & Waktu</th>
+                    <th style="text-align: center; width: 15%;">Kode Ref</th>
+                    <th style="text-align: center; width: 20%;">Nama Aktivitas</th>
+                    <th style="text-align: left; width: 40%; padding-left: 20px;">Deskripsi / Detail Aktivitas</th>
                 </tr>
             </thead>
             <tbody id="tabel-data">
@@ -158,45 +153,60 @@ $total_stok = $masuk - $keluar + $migrasi - $eror;
                 $no = 1;
                 foreach ($log as $row) {
                     $aktivitas = $row['aktivitas'];
-                    $url_aktivitas = '#'; // default link
+                    $url_aktivitas = '#';
+                    $badge_class = '';
+                    $kode_ref = $row['kode_ref'] ?? '-';
 
                     switch ($aktivitas) {
                         case 'Barang Masuk':
                             $url_aktivitas = '../Inventory/barang_masuk.php';
+                            $badge_class = 'badge-masuk';
                             break;
                         case 'Barang Keluar':
                             $url_aktivitas = '../Inventory/barang_keluar.php';
+                            $badge_class = 'badge-keluar';
                             break;
                         case 'Barang Migrasi':
                             $url_aktivitas = '../Inventory/barang_migrasi.php';
+                            $badge_class = 'badge-migrasi';
                             break;
                         case 'Barang Error':
                             $url_aktivitas = '../Inventory/barang_eror.php';
+                            $badge_class = 'badge-error';
                             break;
                         case 'Operasional':
                             $url_aktivitas = '../Expenses/operasional.php';
+                            $badge_class = 'badge-expense';
                             break;
                         case 'Service':
                             $url_aktivitas = '../Expenses/services.php';
+                            $badge_class = 'badge-expense';
                             break;
                         case 'Cicilan':
                             $url_aktivitas = '../Expenses/cicilan.php';
+                            $badge_class = 'badge-expense';
+                            break;
+                        case 'Utilitas':
+                            $url_aktivitas = '../Expenses/utilitas.php';
+                            $badge_class = 'badge-expense';
                             break;
                     }
 
                     echo "<tr>
-        <td style='text-align:center;'>$no</td>
-        <td>" . date("Y-m-d H:i", strtotime($row['waktu'])) . "</td>
-        <td><a href='$url_aktivitas' class='aktivitas-link'>{$aktivitas}</a></td>
-        <td>{$row['detail']}</td>
-    </tr>";
+                            <td style='font-weight: 600;'>$no</td>
+                            <td style='color: #64748b; font-size: 13px;'>" . date("d M Y, H:i", strtotime($row['waktu'])) . "</td>
+                            <td>{$kode_ref}</td>
+                            <td><a href='$url_aktivitas' class='badge-aktivitas {$badge_class}'>{$aktivitas}</a></td>
+                            <td style='color: #475569; text-align: left; padding-left: 20px;'>{$row['detail']}</td>
+                          </tr>";
                     $no++;
                 }
                 ?>
             </tbody>
         </table>
-        <div class="pagination" id="pagination-barang"></div>
+        <div class="pagination" id="pagination-barang" style="margin-left: 107px; margin-bottom: 30px;"></div>
     </section>
+
 
     <footer class="footer-container py-20 px-4 text-white">
         <div id="footer-placeholder">
@@ -204,11 +214,30 @@ $total_stok = $masuk - $keluar + $migrasi - $eror;
         </div>
     </footer>
 
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/modules/cylinder.js"></script>
+
+    <script>
+        const dataMasuk = <?= $qty_masuk ?? 0 ?>;
+        const dataKeluar = <?= $qty_keluar ?? 0 ?>;
+        const dataMigrasi = <?= $qty_migrasi ?? 0 ?>;
+        const dataError = <?= $qty_eror ?? 0 ?>;
+        const dataTotalStok = <?= $total_stok ?? 0 ?>;
+
+        const expOps = <?= $exp_operasional ?? 0 ?>;
+        const expSvc = <?= $exp_service ?? 0 ?>;
+        const expCic = <?= $exp_cicilan ?? 0 ?>;
+        const expUtl = <?= $exp_utilitas ?? 0 ?>;
+    </script>
+
+    <script src="../../assets/js/Menu/grafik_dashboard.js"></script>
+
+    <script src="../../assets/js/global_theme.js"></script>
     <script src="../../assets/js/Menu/dashboard.js"></script>
     <script src="../../assets/js/Opsional/pagination.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="../../assets/js/Opsional/grafik.js"></script>
+    <script src="../../assets/js/Setting/change_theme.js"></script>
 </body>
 
 </html>

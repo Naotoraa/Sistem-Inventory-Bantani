@@ -7,11 +7,14 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php?expired=1");
-    exit();
+  header("Location: login.php?expired=1");
+  exit();
 }
 require '../../config/conn.php';
 
+// ==========================================
+// 1. DATA MANAGE STOK
+// ==========================================
 $qty_masuk   = $conn->query("SELECT SUM(qty) AS qty_masuk FROM barang_masuk")->fetch_assoc()['qty_masuk'] ?? 0;
 $qty_keluar  = $conn->query("SELECT SUM(qty) AS qty_keluar FROM barang_keluar")->fetch_assoc()['qty_keluar'] ?? 0;
 $qty_migrasi = $conn->query("SELECT SUM(qty) AS qty_migrasi FROM barang_migrasi")->fetch_assoc()['qty_migrasi'] ?? 0;
@@ -19,48 +22,65 @@ $qty_eror = $conn->query("SELECT SUM(qty) AS qty_eror FROM barang_eror")->fetch_
 
 $total_stok = $qty_masuk  - $qty_keluar + $qty_migrasi - $qty_eror;
 
+// ==========================================
+// 2. DATA EXPENSES (Otomatis jumlahin Rupiah)
+// ==========================================
+$exp_operasional = $conn->query("SELECT SUM(jumlah) AS total FROM operasional")->fetch_assoc()['total'] ?? 0;
+$exp_service     = $conn->query("SELECT SUM(biaya_service) AS total FROM service")->fetch_assoc()['total'] ?? 0;
+$exp_cicilan     = $conn->query("SELECT SUM(total_cicilan) AS total FROM cicilan")->fetch_assoc()['total'] ?? 0;
+$exp_utilitas    = $conn->query("SELECT SUM(biaya) AS total FROM utilitas")->fetch_assoc()['total'] ?? 0;
 $log = [];
-
 $queries = [
-    ["SELECT bm.created_at AS waktu, 'Barang Masuk' AS aktivitas, 
-        CONCAT(b.nama_barang, ' (', bm.qty, ' ', b.satuan, ')') AS detail 
+  ["SELECT bm.created_at AS waktu, 'Barang Masuk' AS aktivitas, bm.id_barang AS kode_ref, 
+            CONCAT(b.nama_barang, ' (', bm.qty, ' ', b.satuan, ')') AS detail 
       FROM barang_masuk bm
       JOIN barang b ON bm.id_barang = b.id_barang"],
 
-    ["SELECT bk.created_at AS waktu, 'Barang Keluar' AS aktivitas, 
-        CONCAT(b.nama_barang, ' (', bk.qty, ' ', b.satuan, ')') AS detail 
+  ["SELECT bk.created_at AS waktu, 'Barang Keluar' AS aktivitas, bk.id_barang AS kode_ref, 
+            CONCAT(b.nama_barang, ' (', bk.qty, ' ', b.satuan, ')') AS detail 
       FROM barang_keluar bk
       JOIN barang b ON bk.id_barang = b.id_barang"],
 
-    ["SELECT mg.created_at AS waktu, 'Barang Migrasi' AS aktivitas, 
-        CONCAT(b.nama_barang, ' → ', mg.keterangan, ' (', mg.qty, ' ', b.satuan, ')') AS detail 
+  ["SELECT mg.created_at AS waktu, 'Barang Migrasi' AS aktivitas, mg.id_barang AS kode_ref, 
+            CONCAT(b.nama_barang, ' → ', mg.keterangan, ' (', mg.qty, ' ', b.satuan, ')') AS detail 
       FROM barang_migrasi mg
       JOIN barang b ON mg.id_barang = b.id_barang"],
 
-    ["SELECT er.created_at AS waktu, 'Barang Error' AS aktivitas, 
-        CONCAT(b.nama_barang, ' - ', er.keterangan, ' (', er.qty, ' ', b.satuan, ')') AS detail 
+  ["SELECT er.created_at AS waktu, 'Barang Error' AS aktivitas, er.id_barang AS kode_ref, 
+            CONCAT(b.nama_barang, ' - ', er.keterangan, ' (', er.qty, ' ', b.satuan, ')') AS detail 
       FROM barang_eror er
       JOIN barang b ON er.id_barang = b.id_barang"],
 
-    ["SELECT tanggal AS waktu, 'Operasional' AS aktivitas, CONCAT(nama, ' - ', keterangan) AS detail 
+  // Operasional (Pakai ID unik tabelnya karena tidak ada id_barang)
+  ["SELECT tanggal AS waktu, 'Operasional' AS aktivitas, sku AS kode_ref, 
+            CONCAT(nama, ' - ', keterangan) AS detail 
       FROM operasional"],
 
-    ["SELECT tanggal_service AS waktu, 'Service' AS aktivitas, CONCAT(nama_barang, ' - ', keterangan) AS detail 
+  // Service (Pakai ID unik tabelnya)
+  ["SELECT tanggal_service AS waktu, 'Service' AS aktivitas, id_service AS kode_ref, 
+            CONCAT(nama_barang, ' - ', keterangan) AS detail 
       FROM service"],
 
-    ["SELECT tanggal_cicilan AS waktu, 'Cicilan' AS aktivitas, CONCAT(nama_barang, ' - ', keterangan) AS detail 
+  // Cicilan (Pakai ID unik tabelnya)
+  ["SELECT tanggal_cicilan AS waktu, 'Cicilan' AS aktivitas, no_cicilan AS kode_ref, 
+            CONCAT(nama_barang, ' - ', keterangan) AS detail 
       FROM cicilan"],
+
+  // Utilitas (Pakai ID unik tabelnya)
+  ["SELECT tanggal AS waktu, 'Utilitas' AS aktivitas, id_utilitas AS kode_ref, 
+            CONCAT(pembayaran, ' - ', keterangan) AS detail 
+      FROM utilitas"],
 ];
 
 // gabung semua hasil query
 foreach ($queries as [$sql]) {
-    $res = $conn->query($sql);
-    while ($row = $res->fetch_assoc()) {
-        $log[] = $row;
-    }
+  $res = $conn->query($sql);
+  while ($row = $res->fetch_assoc()) {
+    $log[] = $row;
+  }
 }
 
 // urutkan by waktu terbaru
 usort($log, function ($a, $b) {
-    return strtotime($b['waktu']) <=> strtotime($a['waktu']);
+  return strtotime($b['waktu']) <=> strtotime($a['waktu']);
 });

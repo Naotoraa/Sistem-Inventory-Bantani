@@ -7,10 +7,11 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-require '../../config/conn.php';
 
-$query = "SELECT nama_barang, kategori, foto FROM barang";
-$result = mysqli_query($conn, $query);
+require '../../config/conn.php';
+include '../../config/logic/logic_info.php';
+
+/** @var mysqli_result $result */ // <-- Tambah komentar ini
 ?>
 
 <!DOCTYPE html>
@@ -23,6 +24,7 @@ $result = mysqli_query($conn, $query);
     <link rel="icon" href="../../assets/img/Bantani 1.png" type="image/x-icon">
 
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/dark_mode.css">
     <link rel="stylesheet" href="../../assets/css/Menu/info_stok.css">
     <link rel="stylesheet" href="../../assets/css/Partials/navbar.css">
     <link rel="stylesheet" href="../../assets/css/Partials/sidebar.css">
@@ -35,6 +37,8 @@ $result = mysqli_query($conn, $query);
 
 <body class="flex flex-col min-h-screen">
 
+    <script src="../../assets/js/init_theme.js"></script>
+
     <div id="navbar-container">
         <?php include __DIR__ . '/../../partials/navbar.php'; ?>
     </div>
@@ -46,17 +50,38 @@ $result = mysqli_query($conn, $query);
     <div class="content-container">
         <h2 class="table-title">Info Stok</h2>
         <h4 class="sub-title">Menu Untuk melihat Info Stok</h4>
+
+        <form method="GET" action="" class="search-form">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-bar" name="cari"
+                    value="<?= isset($_GET['cari']) ? htmlspecialchars($_GET['cari']) : '' ?>"
+                    placeholder="Cari barang...">
+                <img src="../../assets/img/Bantani 1.png" alt="Logo Bantani">
+            </div>
+        </form>
+
         <section class="info-stok-section">
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
-            <div class="stok-card">
-                <img src="<?= htmlspecialchars($row['foto']) ?>" alt="<?= htmlspecialchars($row['nama_barang']) ?>"
-                    onerror="this.onerror=null;this.src='<?= $link ?>/uploads/default.png';">
+                <div class="stok-card">
+                    <div class="card-img-wrapper">
+                        <img src="<?= htmlspecialchars($row['foto'] ?? '') ?>"
+                            alt="<?= htmlspecialchars($row['nama_barang']) ?>"
+                            onerror="this.onerror=null;this.src='../../uploads/default.png';">
 
-                <div class="stok-info">
-                    <h3><?php echo htmlspecialchars($row['nama_barang']); ?></h3>
-                    <p><strong>Kategori:</strong> <?php echo htmlspecialchars($row['kategori']); ?></p>
+                        <span class="category-badge"><?php echo htmlspecialchars($row['kategori']); ?></span>
+                    </div>
+
+                    <div class="stok-info">
+                        <h3><?php echo htmlspecialchars($row['nama_barang']); ?></h3>
+
+                        <div class="stok-footer">
+                            <span class="stok-label">Tersedia:</span>
+                            <span class="stok-quantity"><?php echo number_format($row['stok_akhir'] ?? 0); ?>
+                                <?php echo htmlspecialchars($row['satuan'] ?? 'Unit'); ?></span>
+                        </div>
+                    </div>
                 </div>
-            </div>
             <?php endwhile; ?>
         </section>
     </div>
@@ -68,6 +93,8 @@ $result = mysqli_query($conn, $query);
     </footer>
 
     <script src="../../assets/js/Menu/info_stok.js"></script>
+    <script src="../../assets/js/global_theme.js"></script>
+    <script src="../../assets/js/Setting/change_theme.js"></script>
 </body>
 
 </html>

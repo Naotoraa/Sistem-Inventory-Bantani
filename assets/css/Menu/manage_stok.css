@@ -257,7 +257,9 @@ td {
   border: 1px solid #ccc;
   border-radius: 40px;
   color: #000;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
 }
 
 .input-wrapper input::placeholder {
@@ -336,7 +338,9 @@ input[type="file"] {
   color: #333;
   border: 2px solid rgba(204, 204, 204, 0.35);
   font-weight: 600;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
   font-size: 0.95rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -372,4 +376,78 @@ div[class*="ts-wrapper"] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Custom CSS Modal Estetik - Tema Hijau */
+.modal-estetik .modal-content {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* Gradasi Hijau */
+.modal-estetik .header-gradient {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 1.5rem;
+}
+
+.modal-estetik .btn-close-white {
+  filter: invert(1) grayscale(100%) brightness(200%);
+  opacity: 0.9;
+  z-index: 10;
+  /* Biar tombol close selalu di layer paling atas */
+}
+
+.modal-estetik .info-badge {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Input Floating & Edit Button */
+.modal-estetik .input-wrapper {
+  position: relative;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.modal-estetik .input-wrapper:hover {
+  border-color: #a7f3d0;
+  /* Hover hijau muda */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.modal-estetik .btn-edit-float {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border-radius: 8px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.modal-estetik .btn-edit-float:hover {
+  background: #10b981;
+  /* Tombol hover jadi hijau */
+  color: white !important;
+}
+
+/* Animasi Card Stok */
+.modal-estetik .card-stok {
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.modal-estetik .card-stok:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }

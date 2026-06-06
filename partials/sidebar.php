@@ -67,11 +67,11 @@
         <span>Setting</span>
     </a>
 
-    <div class="sidebar-divider">
+    <!-- <div class="sidebar-divider">
         <a href="<?= $link ?>/assets/404/404.html" class="nav-link nav-trash" id="trash">
             <i class="fa-solid fa-trash-can"></i>
             <span>Trash</span>
         </a>
-    </div>
+    </div>-->
 
 </div>
