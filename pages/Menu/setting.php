@@ -105,7 +105,7 @@ while ($row = mysqli_fetch_assoc($qBarang)) {
                     <div class="row">
                         <div class="col-md-3 text-center mb-3">
 
-                            <img src="/Gudang/pages/Setting/uploads/profile/<?php echo $foto; ?>"
+                            <img src="uploads/profile/<?php echo $foto; ?>"
                                 style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
 
                             <input type="file" name="foto" class="form-control form-control-sm mt-2">
