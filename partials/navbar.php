@@ -38,12 +38,12 @@ $foto = !empty($user['foto']) ? $user['foto'] : "default.png";
 
             <div class="profile-wrapper">
                 <div class="profile-pentagon">
-                    <img src="../pages/uploads/profile/<?php echo $foto; ?>" alt="avatar" />
+                    <img src="../../assets/img/user.png" alt="avatar" />
                 </div>
 
                 <div class="profile-dropdown">
                     <div class="profile-info">
-                        <img src="../pages/uploads/profile/<?php echo $foto; ?>"
+                        <img src="../../pages/uploads/profile/<?php echo $foto; ?>"
                             style="width:40px;height:40px;border-radius:50%;object-fit:cover;"
                             onerror="this.src='../../assets/img/user.png'">
 
