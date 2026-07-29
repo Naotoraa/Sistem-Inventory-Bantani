@@ -175,6 +175,8 @@ Highcharts.chart("donut-chart", {
     backgroundColor: "transparent",
     style: { fontFamily: "Montserrat, sans-serif" },
     options3d: { enabled: false },
+    marginLeft: 35,
+    marginRight: 35,
   },
   title: { text: null },
   credits: { enabled: false },
@@ -208,7 +210,7 @@ Highcharts.chart("donut-chart", {
   plotOptions: {
     pie: {
       innerSize: "65%",
-      size: "80%",
+      size: "75%",
       borderColor: isChartDark ? "#1e293b" : "#ffffff",
       borderWidth: 2,
       slicedOffset: 15,
