@@ -1,0 +1,2 @@
+Testing Hapus Barang masuk pake ini :
+var_dump("ID yang mau dihapus adalah: " . $id_hapus); die;
